@@ -713,7 +713,20 @@ namespace LC_order_reconstruction_3D
                                     break;
                                 default:  //Other
                                     theta = Math.PI / 2.0;
-                                    phi = phi0_upper + j * 2 * Math.PI / 180;
+                                    R_ij = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y);
+                                    R_ij = Math.Sqrt(R_ij);
+                                    if (Math.Abs(R_ij) > 10.0 && Math.Abs(R_ij) <= 30.0)
+                                    {
+                                        phi = phi0_upper + (R_ij - 20.0) * Math.PI / 20;
+                                    }
+                                    else if (Math.Abs(R_ij) > 30.0 && Math.Abs(R_ij) <= 50.0)
+                                    {
+                                        phi = phi0_upper - (R_ij - 40.0) * Math.PI / 20;
+                                    }
+                                    else
+                                    {
+                                        phi = phi0_upper + Math.PI / 2.0;
+                                    }
                                     break;
                             }
                         }
@@ -2716,6 +2729,10 @@ namespace LC_order_reconstruction_3D
                     if (new_boundary)
                     {
                         double theta, phi;
+                        double c_x, c_y, R_ij;
+
+                        c_x = Nx / 2;
+                        c_y = Ny / 2;
 
                         for (int i = 0; i < Nx; i++)
                         {
@@ -2723,35 +2740,47 @@ namespace LC_order_reconstruction_3D
                             {
                                 #region Top boundary conditions
 
-                                if (upper_boundary == 0) // Defect
+                                switch (upper_boundary)
                                 {
-                                    theta = Math.PI / 2.0;
-                                    phi = phi0_upper;
+                                    case 0:  //Defect pattern
+                                        theta = Math.PI / 2.0;
+                                        phi = phi0_upper;
 
-                                    for (int d = 0; d < defekti_up.Length; d++)
-                                    {
-                                        phi += defekti_up[d][2] * Math.Atan2(j - defekti_up[d][1], i - defekti_up[d][0]);
-                                    }
+                                        for (int d = 0; d < defekti_up.Length; d++)
+                                        {
+                                            phi += defekti_up[d][2] * Math.Atan2(j - defekti_up[d][1], i - defekti_up[d][0]);
+                                        }
+                                        break;
+                                    case 1:  //Tangential
+                                        theta = Math.PI / 2.0;
+                                        phi = phi0_upper;
+                                        break;
+                                    case 2:  //Tangential degenerate
+                                        theta = Math.PI / 2.0;
+                                        phi = Math.PI * r.NextDouble();
+                                        break;
+                                    case 3:  //Homeotropic
+                                        theta = 0.0;
+                                        phi = 0.0;
+                                        break;
+                                    default:  //Other
+                                        theta = Math.PI / 2.0;
+                                        R_ij = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y);
+                                        R_ij = Math.Sqrt(R_ij);
+                                        if (Math.Abs(R_ij) > 10.0 && Math.Abs(R_ij) <= 26.0)
+                                        {
+                                            phi = phi0_upper + (R_ij - 20.0) * Math.PI / 20;
+                                        }
+                                        else if (Math.Abs(R_ij) > 26.0 && Math.Abs(R_ij) <= 42.0)
+                                        {
+                                            phi = phi0_upper - (R_ij - 32.0) * Math.PI / 20;
+                                        }
+                                        else
+                                        {
+                                            phi = phi0_upper + Math.PI / 2.0;
+                                        }
+                                        break;
                                 }
-
-                                else if (upper_boundary == 1) //Tangential 
-                                {
-                                    theta = Math.PI / 2.0;
-                                    phi = phi0_upper;
-                                }
-
-                                else if (upper_boundary == 2) //Tangential degenerate
-                                {
-                                    theta = Math.PI / 2.0;
-                                    phi = Math.PI * r.NextDouble();
-                                }
-
-                                else // Homeotropic
-                                {
-                                    theta = 0.0;
-                                    phi = 0.0;
-                                }
-
                                 #endregion
 
                                 #region Top value calculation
@@ -2772,33 +2801,46 @@ namespace LC_order_reconstruction_3D
 
                                 #region Bottom boundary conditions
 
-                                if (lower_boundary == 0) // Defect
+                                switch (lower_boundary)
                                 {
-                                    theta = Math.PI / 2.0;
-                                    phi = phi0_lower;
+                                    case 0:  //Defect pattern
+                                        theta = Math.PI / 2.0;
+                                        phi = phi0_lower;
 
-                                    for (int d = 0; d < defekti_down.Length; d++)
-                                    {
-                                        phi += defekti_down[d][2] * Math.Atan2(j - defekti_down[d][1], i - defekti_down[d][0]);
-                                    }
-                                }
-
-                                else if (lower_boundary == 1) //Tangential 
-                                {
-                                    theta = Math.PI / 2.0;
-                                    phi = phi0_lower;
-                                }
-
-                                else if (lower_boundary == 2) //Tangential degenerate
-                                {
-                                    theta = Math.PI / 2.0;
-                                    phi = Math.PI * r.NextDouble();
-                                }
-
-                                else // Homeotropic
-                                {
-                                    theta = 0.0;
-                                    phi = 0.0;
+                                        for (int d = 0; d < defekti_down.Length; d++)
+                                        {
+                                            phi += defekti_down[d][2] * Math.Atan2(j - defekti_down[d][1], i - defekti_down[d][0]);
+                                        }
+                                        break;
+                                    case 1:  //Tangential
+                                        theta = Math.PI / 2.0;
+                                        phi = phi0_lower;
+                                        break;
+                                    case 2:  //Tangential degenerate
+                                        theta = Math.PI / 2.0;
+                                        phi = Math.PI * r.NextDouble();
+                                        break;
+                                    case 3:  //Homeotropic
+                                        theta = 0.0;
+                                        phi = 0.0;
+                                        break;
+                                    default:  //Other
+                                        theta = Math.PI / 2.0;
+                                        R_ij = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y);
+                                        R_ij = Math.Sqrt(R_ij);
+                                        if (Math.Abs(R_ij) > 10.0 && Math.Abs(R_ij) <= 30.0)
+                                        {
+                                            phi = phi0_lower + (R_ij - 20.0) * Math.PI / 20;
+                                        }
+                                        else if (Math.Abs(R_ij) > 30.0 && Math.Abs(R_ij) <= 50.0)
+                                        {
+                                            phi = phi0_lower - (R_ij - 40.0) * Math.PI / 20;
+                                        }
+                                        else
+                                        {
+                                            phi = phi0_lower + Math.PI / 2.0;
+                                        }
+                                        break;
                                 }
 
                                 #endregion
@@ -6942,7 +6984,7 @@ namespace LC_order_reconstruction_3D
 
                 Task.WaitAll(tasks);
 
-                //Zgornja_meja_tangential_degenerate(Q2_n, Q3_n);
+                Zgornja_meja_tangential_degenerate(Q2_n, Q3_n);
                 //Spodnja_free_meja(Q1_n, Q2_n, Q3_n, Q4_n, Q5_n);
                 
                 if (sides == 0)
@@ -6972,7 +7014,7 @@ namespace LC_order_reconstruction_3D
 
                 Task.WaitAll(tasks);
 
-                //Zgornja_meja_tangential_degenerate(Q2, Q3);
+                Zgornja_meja_tangential_degenerate(Q2, Q3);
                 //Spodnja_free_meja(Q1, Q2, Q3, Q4, Q5);
                 
                 if (sides == 0)
@@ -6994,7 +7036,7 @@ namespace LC_order_reconstruction_3D
 
                 progressBar1.Increment(2);
 
-                if (it % 100 == 0)
+                if (it % 500 == 0)
                 {
                     Direktorsko_polje(Q1, Q2, Q3, Q4, Q5);
 
@@ -8127,7 +8169,7 @@ namespace LC_order_reconstruction_3D
 
                 progressBar1.Increment(2);
 
-                if (it % 100 == 0)
+                if (it % 20 == 0)
                 {
                     Direktorsko_polje(Q1, Q2, Q3, Q4, Q5);
 
@@ -10163,7 +10205,7 @@ namespace LC_order_reconstruction_3D
                 }
                 else
                 {
-                    //Top_boundary(Q2_n, Q3_n);
+                    Top_boundary(Q2_n, Q3_n);
                 }
 
                 #endregion
@@ -10190,14 +10232,14 @@ namespace LC_order_reconstruction_3D
                 }
                 else
                 {
-                    //Top_boundary(Q2, Q3);
+                    Top_boundary(Q2, Q3);
                 }
 
                 #endregion
 
                 progressBar1.Increment(2);
 
-                if (it % 1000 == 0)
+                if (it % 20 == 0)
                 {
                     Direktorsko_polje(Q1, Q2, Q3, Q4, Q5);
 
