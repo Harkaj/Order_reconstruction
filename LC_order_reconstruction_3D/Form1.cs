@@ -259,16 +259,16 @@ namespace LC_order_reconstruction_3D
                 {
                     phi0_lower = 0.0;
 
-                    defects[0][0] = 72.0;
-                    defects[0][1] = 60.0;
+                    defects[0][0] = 75.0;
+                    defects[0][1] = 50.0;
                     defects[0][2] = -0.5;
 
-                    defects[1][0] = 30.0;
-                    defects[1][1] = 64.0;
+                    defects[1][0] = 37.5;
+                    defects[1][1] = 71.7;
                     defects[1][2] = -0.5;
 
-                    defects[2][0] = 48.0;
-                    defects[2][1] = 26.0;
+                    defects[2][0] = 37.5;
+                    defects[2][1] = 28.3;
                     defects[2][2] = -0.5;
                 }
 
@@ -715,13 +715,13 @@ namespace LC_order_reconstruction_3D
                                     theta = Math.PI / 2.0;
                                     R_ij = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y);
                                     R_ij = Math.Sqrt(R_ij);
-                                    if (Math.Abs(R_ij) > 10.0 && Math.Abs(R_ij) <= 30.0)
+                                    if (Math.Abs(R_ij) > 26.0 && Math.Abs(R_ij) <= 30.0)
                                     {
-                                        phi = phi0_upper + (R_ij - 20.0) * Math.PI / 20;
+                                        phi = phi0_upper + (R_ij - 28.0) * Math.PI / 4;
                                     }
-                                    else if (Math.Abs(R_ij) > 30.0 && Math.Abs(R_ij) <= 50.0)
+                                    else if (Math.Abs(R_ij) > 30.0 && Math.Abs(R_ij) <= 34.0)
                                     {
-                                        phi = phi0_upper - (R_ij - 40.0) * Math.PI / 20;
+                                        phi = phi0_upper - (R_ij - 32.0) * Math.PI / 4;
                                     }
                                     else
                                     {
@@ -853,7 +853,7 @@ namespace LC_order_reconstruction_3D
 
                                 case 5:
                                     theta = Math.PI * k / Nz;
-                                    phi = 0.5 * Math.Atan2(j - defekti_down[0][1], i - defekti_down[0][0]);
+                                    phi = -0.5 * Math.Atan2(j - defekti_down[0][1], i - defekti_down[0][0]);
 
                                     direktorx = Math.Cos(phi);
                                     direktory = Math.Sin(phi) * Math.Cos(theta);
@@ -3387,6 +3387,7 @@ namespace LC_order_reconstruction_3D
                         factor = 8;
 
                         string dir = "POVray files";
+                        dir = Path.Combine(dir, "3D_n+S");
                         if (!Directory.Exists(dir))
                         {
                             Directory.CreateDirectory(dir);
@@ -3540,13 +3541,13 @@ namespace LC_order_reconstruction_3D
                                     jj = int.Parse(data[1]);
                                     kk = int.Parse(data[2]);
 
-                                    if (ii % factor == 3 && jj % factor == 3 && (kk == 2 || kk == 99))
+                                    if (ii % factor == 3 && jj % factor == 3 && (kk == 2 || kk == 50 || kk == 99))
                                     {
                                         n_i = double.Parse(data[3]);
                                         n_j = double.Parse(data[4]);
                                         n_k = double.Parse(data[5]);
 
-                                        angle_x = (180.0 * Math.Acos(n_k)) / Math.PI;
+                                        angle_x = (180.0 * Math.Acos(Math.Abs(n_k))) / Math.PI;
                                         angle_y = -(180.0 * Math.Atan2(n_j, n_i)) / Math.PI;
                                         if (angle_y < 0.0)
                                         {
@@ -3561,7 +3562,7 @@ namespace LC_order_reconstruction_3D
                                         writer.WriteLine("  }");
                                         writer.WriteLine("  rotate<0,0,{0}>", (int)angle_x);
                                         writer.WriteLine("  rotate<0,{0},0>", (int)angle_y);
-                                        writer.WriteLine("  translate<{0},{1},{2}>", ii, kk, jj);
+                                        writer.WriteLine("  translate<{0},{1},{2}>", ii, 1.3 * kk, jj);
                                         writer.WriteLine("}");
                                         writer.WriteLine();
                                     }
@@ -3829,7 +3830,7 @@ namespace LC_order_reconstruction_3D
                                     //colour = POVrayblob_color(x_i, y_j, z_k, d_points);
 
                                     writer.WriteLine("  sphere {");
-                                    writer.Write("           <{0},{1},{2}>, 2.0, 1.0 pigment ", x_i + 1, z_k, y_j + 1, y_j + 2); //<{0},{1},{3}>,
+                                    writer.Write("           <{0},{1},{2}>, 2.0, 1.0 pigment ", x_i + 1, 1.3 * z_k, y_j + 1, y_j + 2); //<{0},{1},{3}>,
                                     writer.WriteLine("{{rgb<{0:F2},0,{1:F2}>}}", (1.0 + set[x_i][y_j][z_k]), set[x_i][y_j][z_k]);
                                     writer.WriteLine("         }");
                                 }
@@ -3874,6 +3875,7 @@ namespace LC_order_reconstruction_3D
                         file_n = 0;
 
                         string dir = "POVray files";
+                        dir = Path.Combine(dir, "3D_S");
                         if (!Directory.Exists(dir))
                         {
                             Directory.CreateDirectory(dir);
@@ -3995,7 +3997,7 @@ namespace LC_order_reconstruction_3D
                             }
 
                             #region Second colour
-                            
+                            /*
                             OpenFileDialog ofd1 = new OpenFileDialog();
                             ofd1.Multiselect = true;
                             ofd1.Filter = "Text files (.txt and .dat)|*.txt; *.dat";
@@ -4038,7 +4040,7 @@ namespace LC_order_reconstruction_3D
                                     #endregion
                                 }
                             }
-                            
+                            */
                             #endregion
 
                             file_n++;
@@ -4068,6 +4070,7 @@ namespace LC_order_reconstruction_3D
                         int file_n = 0;
 
                         string dir = "POVray files";
+                        dir = Path.Combine(dir, "2D_S");
                         if (!Directory.Exists(dir))
                         {
                             Directory.CreateDirectory(dir);
@@ -4259,7 +4262,7 @@ namespace LC_order_reconstruction_3D
                         {
                             datoteka = File.ReadAllLines(file);
 
-                            using (StreamWriter writer = new StreamWriter(Path.Combine("n_pov_script" + file_n.ToString() + ".pov"), false))
+                            using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + file_n.ToString() + ".pov"), false))
                             {
                                 #region Setting up the environment
 
@@ -4360,6 +4363,7 @@ namespace LC_order_reconstruction_3D
                         factor = 3;
 
                         string dir = "POVray files";
+                        dir = Path.Combine(dir, "2D_n_xy");
                         if (!Directory.Exists(dir))
                         {
                             Directory.CreateDirectory(dir);
@@ -4371,7 +4375,7 @@ namespace LC_order_reconstruction_3D
                         {
                             datoteka = File.ReadAllLines(file);
 
-                            using (StreamWriter writer = new StreamWriter(Path.Combine("n_pov_script" + file_n.ToString() + ".pov"), false))
+                            using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + file_n.ToString() + ".pov"), false))
                             {
                                 #region Setting up the environment
 
@@ -4384,7 +4388,7 @@ namespace LC_order_reconstruction_3D
                                 writer.WriteLine();
 
                                 writer.WriteLine("camera { orthographic");
-                                writer.WriteLine("  location <50, 50, -72>");
+                                writer.WriteLine("  location <50, 50, -120>");
                                 writer.WriteLine("  look_at  <50, 50, 0>");
                                 writer.WriteLine("}");
                                 writer.WriteLine();
@@ -4432,7 +4436,7 @@ namespace LC_order_reconstruction_3D
                                         writer.WriteLine("    finish { reflection 0.05 phong 1}");
                                         writer.WriteLine("  }");
                                         writer.WriteLine("  rotate<0,{0},{1}>", (int)angle_z, (int)angle_y);
-                                        writer.WriteLine("  translate<{0},{1},0>", 2 * ii - 50, 2 * jj - 50);
+                                        writer.WriteLine("  translate<{0},{1},0>", ii, jj);
                                         writer.WriteLine("}");
                                         writer.WriteLine();
                                     }
@@ -4470,6 +4474,7 @@ namespace LC_order_reconstruction_3D
                         factor = 4;
 
                         string dir = "POVray files";
+                        dir = Path.Combine(dir, "2D_n_xz");
                         if (!Directory.Exists(dir))
                         {
                             Directory.CreateDirectory(dir);
@@ -4481,7 +4486,7 @@ namespace LC_order_reconstruction_3D
                         {
                             datoteka = File.ReadAllLines(file);
 
-                            using (StreamWriter writer = new StreamWriter(Path.Combine("n_pov_script" + file_n.ToString() + ".pov"), false))
+                            using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + file_n.ToString() + ".pov"), false))
                             {
                                 #region Setting up the environment
 
@@ -4583,6 +4588,7 @@ namespace LC_order_reconstruction_3D
                         factor = 6;
 
                         string dir = "POVray files";
+                        dir = Path.Combine(dir, "2D_n_yz");
                         if (!Directory.Exists(dir))
                         {
                             Directory.CreateDirectory(dir);
@@ -4594,7 +4600,7 @@ namespace LC_order_reconstruction_3D
                         {
                             datoteka = File.ReadAllLines(file);
 
-                            using (StreamWriter writer = new StreamWriter(Path.Combine("n_pov_script" + file_n.ToString() + ".pov"), false))
+                            using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + file_n.ToString() + ".pov"), false))
                             {
                                 #region Setting up the environment
 
@@ -5764,7 +5770,7 @@ namespace LC_order_reconstruction_3D
 
             if (changemode == 2)
             {
-                for (int count = 2; count < 120; count += 2)
+                for (int count = 2; count <= 120; count += 2)
                 {
                     #region Resetting the tensor field
 
@@ -5810,6 +5816,7 @@ namespace LC_order_reconstruction_3D
                     defekti_down[2][0] = 50 + (int)(25.0 * move_x3);
                     defekti_down[2][1] = 50 + (int)(25.0 * move_y3);
 
+                    phi0_lower += Math.PI / 90.0;
                     /*for (int i = 0; i < 2; i++)
                     {
                         for (int j = 0; j < 2; j++)
@@ -6984,7 +6991,7 @@ namespace LC_order_reconstruction_3D
 
                 Task.WaitAll(tasks);
 
-                Zgornja_meja_tangential_degenerate(Q2_n, Q3_n);
+                //Zgornja_meja_tangential_degenerate(Q2_n, Q3_n);
                 //Spodnja_free_meja(Q1_n, Q2_n, Q3_n, Q4_n, Q5_n);
                 
                 if (sides == 0)
@@ -7014,7 +7021,7 @@ namespace LC_order_reconstruction_3D
 
                 Task.WaitAll(tasks);
 
-                Zgornja_meja_tangential_degenerate(Q2, Q3);
+                //Zgornja_meja_tangential_degenerate(Q2, Q3);
                 //Spodnja_free_meja(Q1, Q2, Q3, Q4, Q5);
                 
                 if (sides == 0)
@@ -7036,7 +7043,7 @@ namespace LC_order_reconstruction_3D
 
                 progressBar1.Increment(2);
 
-                if (it % 500 == 0)
+                if (it % 1000 == 0)
                 {
                     Direktorsko_polje(Q1, Q2, Q3, Q4, Q5);
 
@@ -8169,7 +8176,7 @@ namespace LC_order_reconstruction_3D
 
                 progressBar1.Increment(2);
 
-                if (it % 20 == 0)
+                if (it % 2 == 0)
                 {
                     Direktorsko_polje(Q1, Q2, Q3, Q4, Q5);
 
