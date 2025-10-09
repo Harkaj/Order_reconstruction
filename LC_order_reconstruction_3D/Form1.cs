@@ -22,9 +22,10 @@ namespace LC_order_reconstruction_3D
 
         #region Variables
 
-        static bool defekt, reset, interpolation, new_boundary, time_dependent, inserts, unequal_L, chiral;
+        static bool defekt, reset, interpolation, new_boundary, time_dependent, inserts, unequal_L, chiral, zoom_in;
         static int i_lower, i_upper, j_lower, j_upper, k_lower, k_upper, bulk, upper_boundary, lower_boundary, sides, fname, plane, skip1, skip2;
         static int Nx, Ny, Nz, itmax, nap, it, run_type, N_defektov, E_changing, N_r, changemode, factor;
+        static int moire_r1, moire_r2, moire_r3, zoom_x, zoom_y;
         static double dx, dy, dz, dxy, dxz, dyz, dxyz, eps, Rmi, Rma, t, tt, a, AA, kor, w, sb, BB, B_f, Ex, Ey, Ez, E_max;
         static double gamma, dt, k1, k2, k3, L1, L2, L3, L_chiral, phi0_upper, phi0_lower, phi0_bulk, deps, dmu;
         static int draw_mode = 0;
@@ -715,13 +716,13 @@ namespace LC_order_reconstruction_3D
                                     theta = Math.PI / 2.0;
                                     R_ij = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y);
                                     R_ij = Math.Sqrt(R_ij);
-                                    if (Math.Abs(R_ij) > 26.0 && Math.Abs(R_ij) <= 30.0)
+                                    if (Math.Abs(R_ij) > 30.0 && Math.Abs(R_ij) <= 60.0)
                                     {
-                                        phi = phi0_upper + (R_ij - 28.0) * Math.PI / 4;
+                                        phi = phi0_upper + (R_ij - 45.0) * Math.PI / 30;
                                     }
-                                    else if (Math.Abs(R_ij) > 30.0 && Math.Abs(R_ij) <= 34.0)
+                                    else if (Math.Abs(R_ij) > 60.0 && Math.Abs(R_ij) <= 90.0)
                                     {
-                                        phi = phi0_upper - (R_ij - 32.0) * Math.PI / 4;
+                                        phi = phi0_upper - (R_ij - 75.0) * Math.PI / 30;
                                     }
                                     else
                                     {
@@ -3349,6 +3350,9 @@ namespace LC_order_reconstruction_3D
             else if (Calculation_selection.SelectedIndex == 4)
             {
                 N_r = (int)POV_n_ravnine.Value;
+                zoom_in = Zoom_in.Checked;
+                zoom_x = (int)Min_x_n.Value;
+                zoom_y = (int)Min_y_n.Value;
 
                 #region (0) 3D view with n and S
 
@@ -4098,6 +4102,32 @@ namespace LC_order_reconstruction_3D
 
                         #endregion
 
+                        #region Setting up the multiple images script
+
+                        using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "S_pov_script.ini"), false))
+                        {
+                            writer.WriteLine("Input_File_Name=S_pov_script.pov");
+                            writer.WriteLine();
+                            writer.WriteLine("; these are the default values");
+                            writer.WriteLine("Initial_Clock=0.000");
+                            writer.WriteLine("Final_CLock=1.000");
+                            writer.WriteLine("Antialias=On");
+                            writer.WriteLine("Antialias_Threshold=0.05");
+                            writer.WriteLine();
+                            writer.WriteLine("Initial_Frame=0");
+                            writer.WriteLine("Final_Frame={0}", ofd2.FileNames.Length - 1);
+                            writer.WriteLine();
+                            writer.WriteLine("Height=1024");
+                            writer.WriteLine("Width=1280");
+                        }
+
+                        using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "S_pov_script.pov"), false))
+                        {
+                            writer.WriteLine("#include concat(\"S_pov_script\", str(frame_number, -3, 0), \".pov\")");
+                        }
+
+                        #endregion
+
                         #region Izpis
 
                         foreach (string file in ofd2.FileNames)
@@ -4355,6 +4385,7 @@ namespace LC_order_reconstruction_3D
 
                         string[] datoteka, data;
                         string[] separators = { "\t", " " };
+                        string add0;
 
                         int ii, jj, kk, file_n, factor;
                         double n_i, n_j, n_k, angle_y, angle_z;
@@ -4371,79 +4402,194 @@ namespace LC_order_reconstruction_3D
 
                         #endregion
 
+                        #region Setting up the multiple images script
+
+                        using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script.ini"), false))
+                        {
+                            writer.WriteLine("Input_File_Name=n_pov_script{0}_.pov", N_r.ToString());
+                            writer.WriteLine();
+                            writer.WriteLine("; these are the default values");
+                            writer.WriteLine("Initial_Clock=0.000");
+                            writer.WriteLine("Final_CLock=1.000");
+                            writer.WriteLine("Antialias=On");
+                            writer.WriteLine("Antialias_Threshold=0.05");
+                            writer.WriteLine();
+                            writer.WriteLine("Initial_Frame=0");
+                            writer.WriteLine("Final_Frame={0}", ofd.FileNames.Length - 1);
+                            writer.WriteLine();
+                            writer.WriteLine("Height=1024");
+                            writer.WriteLine("Width=1280");
+                        }
+
+                        using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + N_r.ToString() + "_.pov"), false))
+                        {
+                            writer.WriteLine("#include concat(\"n_pov_script{0}_\", str(frame_number, -3, 0), \".pov\")", N_r.ToString());
+                        }
+
+                        #endregion
+
                         foreach (string file in ofd.FileNames)
                         {
+                            #region Adding zeros in name
+
+                            add0 = null;
+                            if (file_n < 10) { add0 = "00"; }
+                            else if (file_n < 100) { add0 = "0"; }
+                            else { add0 = null;  }
+
+                            #endregion
+
                             datoteka = File.ReadAllLines(file);
 
-                            using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + file_n.ToString() + ".pov"), false))
+                            if (zoom_in)
                             {
-                                #region Setting up the environment
-
-                                writer.WriteLine("#include \"colors.inc\"");
-                                writer.WriteLine("#include \"textures.inc\"");
-                                writer.WriteLine("#include \"shapes.inc\"");
-                                writer.WriteLine();
-
-                                writer.WriteLine("background { color White }");
-                                writer.WriteLine();
-
-                                writer.WriteLine("camera { orthographic");
-                                writer.WriteLine("  location <50, 50, -120>");
-                                writer.WriteLine("  look_at  <50, 50, 0>");
-                                writer.WriteLine("}");
-                                writer.WriteLine();
-
-                                writer.WriteLine("light_source { <50, 50, -50> color White shadowless");
-                                writer.WriteLine("               area_light <100, 0, 0>, <0, 100, 0>, 5, 5");
-                                writer.WriteLine("               adaptive 1 jitter }");
-                                writer.WriteLine();
-
-                                #endregion
-
-                                #region Writing the objects
-
-                                for (int i = 0; i < datoteka.Length; i++)
+                                //filename = file.Substring();
+                                using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + N_r.ToString() + "_" + add0 + file_n.ToString() + ".pov"), false))
                                 {
-                                    data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                                    #region Setting up the environment
 
-                                    ii = int.Parse(data[0]);
-                                    jj = int.Parse(data[1]);
-                                    kk = int.Parse(data[2]);
+                                    writer.WriteLine("#include \"colors.inc\"");
+                                    writer.WriteLine("#include \"textures.inc\"");
+                                    writer.WriteLine("#include \"shapes.inc\"");
+                                    writer.WriteLine();
 
-                                    if (ii % factor == 0 && jj % factor == 0 && kk == N_r)
+                                    writer.WriteLine("background { color White }");
+                                    writer.WriteLine();
+
+                                    writer.WriteLine("camera { orthographic");
+                                    writer.WriteLine("  location <{0}, {1}, -35>", zoom_x + 15, zoom_y + 15);
+                                    writer.WriteLine("  look_at  <{0}, {1}, 0>", zoom_x + 15, zoom_y + 15);
+                                    writer.WriteLine("}");
+                                    writer.WriteLine();
+
+                                    writer.WriteLine("light_source { <50, 50, -50> color White shadowless");
+                                    writer.WriteLine("               area_light <100, 0, 0>, <0, 100, 0>, 5, 5");
+                                    writer.WriteLine("               adaptive 1 jitter }");
+                                    writer.WriteLine();
+
+                                    #endregion
+
+                                    #region Writing the objects
+
+                                    for (int i = 0; i < datoteka.Length; i++)
                                     {
-                                        n_i = double.Parse(data[3]);
-                                        n_j = double.Parse(data[4]);
-                                        n_k = double.Parse(data[5]);
+                                        data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
-                                        if (n_i == 0.0 && n_j == 0.0)
+                                        ii = int.Parse(data[0]);
+                                        jj = int.Parse(data[1]);
+                                        kk = int.Parse(data[2]);
+
+                                        if (ii > zoom_x && ii < zoom_x + 30 && jj > zoom_y && jj < zoom_y + 30 && kk == N_r)
                                         {
-                                            continue;
+                                            n_i = double.Parse(data[3]);
+                                            n_j = double.Parse(data[4]);
+                                            n_k = double.Parse(data[5]);
+
+                                            if (n_i == 0.0 && n_j == 0.0)
+                                            {
+                                                continue;
+                                            }
+
+                                            angle_y = (180.0 * Math.Atan2(n_j, n_i)) / Math.PI;
+
+                                            angle_z = (180.0 * Math.Asin(n_k)) / Math.PI;
+                                            //if (angle_z < 0.0) // && angle_y > 90.0
+                                            //{
+                                            //    angle_z += 180.0;
+                                            //}
+
+                                            writer.WriteLine("object{");
+                                            writer.WriteLine("  Round_Cylinder");
+                                            writer.WriteLine("   (<-0.5,0,0>,<0.5,0,0>, 0.2, 0.1, 1)");
+                                            writer.WriteLine("  texture{ pigment{ color Green}");
+                                            writer.WriteLine("    finish { reflection 0.05 phong 1}");
+                                            writer.WriteLine("  }");
+                                            writer.WriteLine("  rotate<0,{0},{1}>", (int)angle_z, (int)angle_y);
+                                            writer.WriteLine("  translate<{0},{1},0>", ii, jj);
+                                            writer.WriteLine("}");
+                                            writer.WriteLine();
                                         }
-
-                                        angle_y = (180.0 * Math.Atan2(n_j, n_i)) / Math.PI;
-
-                                        angle_z = (180.0 * Math.Asin(n_k)) / Math.PI;
-                                        //if (angle_z < 0.0) // && angle_y > 90.0
-                                        //{
-                                        //    angle_z += 180.0;
-                                        //}
-
-                                        writer.WriteLine("object{");
-                                        writer.WriteLine("  Round_Cylinder");
-                                        writer.WriteLine("   (<-2,0,0>,<2,0,0>, 0.8, 0.1, 1)");
-                                        writer.WriteLine("  texture{ pigment{ color Green}");
-                                        writer.WriteLine("    finish { reflection 0.05 phong 1}");
-                                        writer.WriteLine("  }");
-                                        writer.WriteLine("  rotate<0,{0},{1}>", (int)angle_z, (int)angle_y);
-                                        writer.WriteLine("  translate<{0},{1},0>", ii, jj);
-                                        writer.WriteLine("}");
-                                        writer.WriteLine();
                                     }
-                                }
 
-                                #endregion
+                                    #endregion
+                                }
                             }
+                            
+                            else
+                            {
+                                //filename = file.Substring();
+                                using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + N_r.ToString() + "_" + add0 + file_n.ToString() + ".pov"), false))
+                                {
+                                    #region Setting up the environment
+
+                                    writer.WriteLine("#include \"colors.inc\"");
+                                    writer.WriteLine("#include \"textures.inc\"");
+                                    writer.WriteLine("#include \"shapes.inc\"");
+                                    writer.WriteLine();
+
+                                    writer.WriteLine("background { color White }");
+                                    writer.WriteLine();
+
+                                    writer.WriteLine("camera { orthographic");
+                                    writer.WriteLine("  location <50, 50, -120>");
+                                    writer.WriteLine("  look_at  <50, 50, 0>");
+                                    writer.WriteLine("}");
+                                    writer.WriteLine();
+
+                                    writer.WriteLine("light_source { <50, 50, -50> color White shadowless");
+                                    writer.WriteLine("               area_light <100, 0, 0>, <0, 100, 0>, 5, 5");
+                                    writer.WriteLine("               adaptive 1 jitter }");
+                                    writer.WriteLine();
+
+                                    #endregion
+
+                                    #region Writing the objects
+
+                                    for (int i = 0; i < datoteka.Length; i++)
+                                    {
+                                        data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+                                        ii = int.Parse(data[0]);
+                                        jj = int.Parse(data[1]);
+                                        kk = int.Parse(data[2]);
+
+                                        if (ii % factor == 0 && jj % factor == 0 && kk == N_r)
+                                        {
+                                            n_i = double.Parse(data[3]);
+                                            n_j = double.Parse(data[4]);
+                                            n_k = double.Parse(data[5]);
+
+                                            if (n_i == 0.0 && n_j == 0.0)
+                                            {
+                                                continue;
+                                            }
+
+                                            angle_y = (180.0 * Math.Atan2(n_j, n_i)) / Math.PI;
+
+                                            angle_z = (180.0 * Math.Asin(n_k)) / Math.PI;
+                                            //if (angle_z < 0.0) // && angle_y > 90.0
+                                            //{
+                                            //    angle_z += 180.0;
+                                            //}
+
+                                            writer.WriteLine("object{");
+                                            writer.WriteLine("  Round_Cylinder");
+                                            writer.WriteLine("   (<-2,0,0>,<2,0,0>, 0.8, 0.1, 1)");
+                                            writer.WriteLine("  texture{ pigment{ color Green}");
+                                            writer.WriteLine("    finish { reflection 0.05 phong 1}");
+                                            writer.WriteLine("  }");
+                                            writer.WriteLine("  rotate<0,{0},{1}>", (int)angle_z, (int)angle_y);
+                                            writer.WriteLine("  translate<{0},{1},0>", ii, jj);
+                                            writer.WriteLine("}");
+                                            writer.WriteLine();
+                                        }
+                                    }
+
+                                    #endregion
+                                }
+                            }
+                            
+                            file_n++;
                         }
                     }
                 }
@@ -5770,194 +5916,357 @@ namespace LC_order_reconstruction_3D
 
             if (changemode == 2)
             {
-                for (int count = 2; count <= 120; count += 2)
-                {
-                    #region Resetting the tensor field
+                int ver = 2;
 
-                    if (reset)
+                #region Turning
+
+                if (ver == 1)
+                {
+                    for (int count = 2; count <= 120; count += 2)
                     {
+                        #region Resetting the tensor field
+
+                        if (reset)
+                        {
+                            for (int i = 0; i < Nx; i++)
+                            {
+                                for (int j = 0; j < Ny; j++)
+                                {
+                                    for (int k = 0; k < Nz; k++)
+                                    {
+                                        Q1[i][j][k] = Q1_r[i][j][k];
+                                        Q2[i][j][k] = Q2_r[i][j][k];
+                                        Q3[i][j][k] = Q3_r[i][j][k];
+                                        Q4[i][j][k] = Q4_r[i][j][k];
+                                        Q5[i][j][k] = Q5_r[i][j][k];
+                                    }
+                                }
+                            }
+                        }
+
+                        #endregion
+
+                        #region Novi spodnji robni pogoji
+
+                        double move_x1, move_y1, move_x2, move_y2, move_x3, move_y3;
+
+                        move_x1 = Math.Cos((double)count * Math.PI / 180.0);
+                        move_y1 = Math.Sin((double)count * Math.PI / 180.0);
+
+                        move_x2 = Math.Cos((double)(count + 120) * Math.PI / 180.0);
+                        move_y2 = Math.Sin((double)(count + 120) * Math.PI / 180.0);
+
+                        move_x3 = Math.Cos((double)(count - 120) * Math.PI / 180.0);
+                        move_y3 = Math.Sin((double)(count - 120) * Math.PI / 180.0);
+
+                        defekti_down[0][0] = 50 + (int)(25.0 * move_x1);
+                        defekti_down[0][1] = 50 + (int)(25.0 * move_y1);
+
+                        defekti_down[1][0] = 50 + (int)(25.0 * move_x2);
+                        defekti_down[1][1] = 50 + (int)(25.0 * move_y2);
+
+                        defekti_down[2][0] = 50 + (int)(25.0 * move_x3);
+                        defekti_down[2][1] = 50 + (int)(25.0 * move_y3);
+
+                        phi0_lower += Math.PI / 90.0;
+                        /*for (int i = 0; i < 2; i++)
+                        {
+                            for (int j = 0; j < 2; j++)
+                            {
+                                if (j == 0)
+                                {
+                                    defekti_down[2 * i + j][1] += 1.0;
+                                }
+                                if (j == 1)
+                                {
+                                    defekti_down[2 * i + j][1] -= 1.0;
+                                }
+                            }
+                        }*/
+
+                        double theta, phi;
+
                         for (int i = 0; i < Nx; i++)
                         {
                             for (int j = 0; j < Ny; j++)
                             {
-                                for (int k = 0; k < Nz; k++)
+                                #region Nastavitev pogojev
+
+                                if (lower_boundary == 0) // Defect
                                 {
-                                    Q1[i][j][k] = Q1_r[i][j][k];
-                                    Q2[i][j][k] = Q2_r[i][j][k];
-                                    Q3[i][j][k] = Q3_r[i][j][k];
-                                    Q4[i][j][k] = Q4_r[i][j][k];
-                                    Q5[i][j][k] = Q5_r[i][j][k];
+                                    theta = Math.PI / 2.0;
+                                    phi = phi0_lower;
+
+                                    for (int d = 0; d < defekti_down.Length; d++)
+                                    {
+                                        phi += defekti_down[d][2] * Math.Atan2(j - defekti_down[d][1], i - defekti_down[d][0]);
+                                    }
+                                }
+
+                                else if (lower_boundary == 1) //Tangential
+                                {
+                                    theta = Math.PI / 2.0;
+                                    phi = phi0_lower;
+                                }
+
+                                else if (lower_boundary == 2) //Tangential degenerate
+                                {
+                                    theta = Math.PI / 2.0;
+                                    phi = Math.PI * r.NextDouble();
+                                }
+
+                                else // Homeotropic
+                                {
+                                    theta = 0.0;
+                                    phi = 0.0;
+                                }
+
+                                #endregion
+
+                                #region Izračun vrednosti
+
+                                Q1[i][j][0] = tt * (1.0 / 6.0 - (Math.Cos(theta) * Math.Cos(theta)) / 2.0);
+                                Q2[i][j][0] = tt * (Math.Sin(theta) * Math.Sin(theta) * Math.Cos(2.0 * phi)) / 2.0;
+                                Q3[i][j][0] = tt * (Math.Sin(theta) * Math.Sin(theta) * Math.Sin(2.0 * phi)) / 2.0;
+                                Q4[i][j][0] = tt * (Math.Sin(2.0 * theta) * Math.Cos(phi)) / 2.0;
+                                Q5[i][j][0] = tt * (Math.Sin(2.0 * theta) * Math.Sin(phi)) / 2.0;
+
+                                Q1_n[i][j][0] = Q1[i][j][0];
+                                Q2_n[i][j][0] = Q2[i][j][0];
+                                Q3_n[i][j][0] = Q3[i][j][0];
+                                Q4_n[i][j][0] = Q4[i][j][0];
+                                Q5_n[i][j][0] = Q5[i][j][0];
+
+                                Q1_plate[i][j][0] = Q1[i][j][0];
+                                Q2_plate[i][j][0] = Q2[i][j][0];
+                                Q3_plate[i][j][0] = Q3[i][j][0];
+                                Q4_plate[i][j][0] = Q4[i][j][0];
+                                Q5_plate[i][j][0] = Q5[i][j][0];
+
+                                #endregion
+                            }
+                        }
+
+                        #endregion
+
+                        #region Izpis
+
+                        dir = "Changing boundary";
+                        dir = Path.Combine(dir, "angle" + (count).ToString());
+
+                        if (!Directory.Exists(dir))
+                        {
+                            Directory.CreateDirectory(dir);
+                        }
+
+                        using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Parameters.txt"), false))
+                        {
+                            if (time_dependent)
+                            {
+                                writer.WriteLine("Model used: Time dependent");
+                            }
+                            else
+                            {
+                                writer.WriteLine("Model used: Time independent");
+                            }
+                            writer.WriteLine();
+
+                            writer.WriteLine("Nx: {0}  Ny: {1}  Nz: {2}", Nx, Ny, Nz);
+                            writer.WriteLine("a: {0}  Rmi: {1}  Rma: {2}", a, Rmi, Rma);
+                            writer.WriteLine("eps: {0}  kor: {1}  t: {2}", eps, kor, t);
+                            writer.WriteLine("w: {0}  BB: {1}  itmax: {2}", w, BB, itmax);
+                            writer.WriteLine("Ex: {0}  Ey: {1}  Ez: {2} ", Ex, Ey, Ez);
+                            writer.WriteLine("deps: {0}  homogeneous: {1} ", deps, E_homogeneous.Checked);
+                            writer.WriteLine();
+
+                            writer.WriteLine("interpolation : {0}  reset: {1}  different boundary: {1}", interpolation, reset, new_boundary);
+                            if (new_boundary)
+                            {
+                                writer.WriteLine("robni: {0}  N defektov: {1}", defekt, N_defektov);
+                                for (int i = 0; i < N_defektov; i++)
+                                {
+                                    writer.WriteLine("Defect {0,2}: m = {1,3}  x = {2,2}  y = {3,2}", i + 1, defekti_down[i][2], defekti_down[i][0], defekti_down[i][1]);
                                 }
                             }
                         }
-                    }
 
-                    #endregion
+                        #endregion
 
-                    #region Novi spodnji robni pogoji
+                        #region Izračun
 
-                    double move_x1, move_y1, move_x2, move_y2, move_x3, move_y3;
-
-                    move_x1 = Math.Cos((double)count * Math.PI / 180.0);
-                    move_y1 = Math.Sin((double)count * Math.PI / 180.0);
-
-                    move_x2 = Math.Cos((double)(count + 120) * Math.PI / 180.0);
-                    move_y2 = Math.Sin((double)(count + 120) * Math.PI / 180.0);
-
-                    move_x3 = Math.Cos((double)(count - 120) * Math.PI / 180.0);
-                    move_y3 = Math.Sin((double)(count - 120) * Math.PI / 180.0);
-
-                    defekti_down[0][0] = 50 + (int)(25.0 * move_x1);
-                    defekti_down[0][1] = 50 + (int)(25.0 * move_y1);
-
-                    defekti_down[1][0] = 50 + (int)(25.0 * move_x2);
-                    defekti_down[1][1] = 50 + (int)(25.0 * move_y2);
-
-                    defekti_down[2][0] = 50 + (int)(25.0 * move_x3);
-                    defekti_down[2][1] = 50 + (int)(25.0 * move_y3);
-
-                    phi0_lower += Math.PI / 90.0;
-                    /*for (int i = 0; i < 2; i++)
-                    {
-                        for (int j = 0; j < 2; j++)
-                        {
-                            if (j == 0)
-                            {
-                                defekti_down[2 * i + j][1] += 1.0;
-                            }
-                            if (j == 1)
-                            {
-                                defekti_down[2 * i + j][1] -= 1.0;
-                            }
-                        }
-                    }*/
-
-                    double theta, phi;
-
-                    for (int i = 0; i < Nx; i++)
-                    {
-                        for (int j = 0; j < Ny; j++)
-                        {
-                            #region Nastavitev pogojev
-
-                            if (lower_boundary == 0) // Defect
-                            {
-                                theta = Math.PI / 2.0;
-                                phi = phi0_lower;
-
-                                for (int d = 0; d < defekti_down.Length; d++)
-                                {
-                                    phi += defekti_down[d][2] * Math.Atan2(j - defekti_down[d][1], i - defekti_down[d][0]);
-                                }
-                            }
-
-                            else if (lower_boundary == 1) //Tangential
-                            {
-                                theta = Math.PI / 2.0;
-                                phi = phi0_lower;
-                            }
-
-                            else if (lower_boundary == 2) //Tangential degenerate
-                            {
-                                theta = Math.PI / 2.0;
-                                phi = Math.PI * r.NextDouble();
-                            }
-
-                            else // Homeotropic
-                            {
-                                theta = 0.0;
-                                phi = 0.0;
-                            }
-
-                            #endregion
-
-                            #region Izračun vrednosti
-
-                            Q1[i][j][0] = tt * (1.0 / 6.0 - (Math.Cos(theta) * Math.Cos(theta)) / 2.0);
-                            Q2[i][j][0] = tt * (Math.Sin(theta) * Math.Sin(theta) * Math.Cos(2.0 * phi)) / 2.0;
-                            Q3[i][j][0] = tt * (Math.Sin(theta) * Math.Sin(theta) * Math.Sin(2.0 * phi)) / 2.0;
-                            Q4[i][j][0] = tt * (Math.Sin(2.0 * theta) * Math.Cos(phi)) / 2.0;
-                            Q5[i][j][0] = tt * (Math.Sin(2.0 * theta) * Math.Sin(phi)) / 2.0;
-
-                            Q1_n[i][j][0] = Q1[i][j][0];
-                            Q2_n[i][j][0] = Q2[i][j][0];
-                            Q3_n[i][j][0] = Q3[i][j][0];
-                            Q4_n[i][j][0] = Q4[i][j][0];
-                            Q5_n[i][j][0] = Q5[i][j][0];
-
-                            Q1_plate[i][j][0] = Q1[i][j][0];
-                            Q2_plate[i][j][0] = Q2[i][j][0];
-                            Q3_plate[i][j][0] = Q3[i][j][0];
-                            Q4_plate[i][j][0] = Q4[i][j][0];
-                            Q5_plate[i][j][0] = Q5[i][j][0];
-
-                            #endregion
-                        }
-                    }
-
-                    #endregion
-
-                    #region Izpis
-
-                    dir = "Changing boundary";
-                    dir = Path.Combine(dir, "angle" + (count).ToString());
-
-                    if (!Directory.Exists(dir))
-                    {
-                        Directory.CreateDirectory(dir);
-                    }
-
-                    using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Parameters.txt"), false))
-                    {
                         if (time_dependent)
                         {
-                            writer.WriteLine("Model used: Time dependent");
+                            Iteration_dt_dir(dir);
                         }
+
                         else
                         {
-                            writer.WriteLine("Model used: Time independent");
+                            Iteration_dir(dir);
                         }
-                        writer.WriteLine();
 
-                        writer.WriteLine("Nx: {0}  Ny: {1}  Nz: {2}", Nx, Ny, Nz);
-                        writer.WriteLine("a: {0}  Rmi: {1}  Rma: {2}", a, Rmi, Rma);
-                        writer.WriteLine("eps: {0}  kor: {1}  t: {2}", eps, kor, t);
-                        writer.WriteLine("w: {0}  BB: {1}  itmax: {2}", w, BB, itmax);
-                        writer.WriteLine("Ex: {0}  Ey: {1}  Ez: {2} ", Ex, Ey, Ez);
-                        writer.WriteLine("deps: {0}  homogeneous: {1} ", deps, E_homogeneous.Checked);
-                        writer.WriteLine();
+                        Angle_calculation_dir(dir);
 
-                        writer.WriteLine("interpolation : {0}  reset: {1}  different boundary: {1}", interpolation, reset, new_boundary);
-                        if (new_boundary)
+                        Izpis_rezultatov(dir);
+
+                        #endregion
+                    }
+                }
+
+                #endregion
+
+                #region Reducing loop distance
+
+                if (ver == 2)
+                {
+                    moire_r1 = 60;
+                    for (moire_r2 = 30; moire_r2 > 0; moire_r2--)
+                    {
+                        #region Resetting the tensor field
+
+                        if (reset)
                         {
-                            writer.WriteLine("robni: {0}  N defektov: {1}", defekt, N_defektov);
-                            for (int i = 0; i < N_defektov; i++)
+                            for (int i = 0; i < Nx; i++)
                             {
-                                writer.WriteLine("Defect {0,2}: m = {1,3}  x = {2,2}  y = {3,2}", i + 1, defekti_down[i][2], defekti_down[i][0], defekti_down[i][1]);
+                                for (int j = 0; j < Ny; j++)
+                                {
+                                    for (int k = 0; k < Nz; k++)
+                                    {
+                                        Q1[i][j][k] = Q1_r[i][j][k];
+                                        Q2[i][j][k] = Q2_r[i][j][k];
+                                        Q3[i][j][k] = Q3_r[i][j][k];
+                                        Q4[i][j][k] = Q4_r[i][j][k];
+                                        Q5[i][j][k] = Q5_r[i][j][k];
+                                    }
+                                }
                             }
                         }
+
+                        #endregion
+
+                        #region Novi zgornji robni pogoji
+
+                        double c_x, c_y, c_z, R_ij, theta, phi, c_1, c_2;
+                        theta = Math.PI / 2.0;
+
+                        c_x = Nx / 2;
+                        c_y = Ny / 2;
+                        c_z = Nz / 2;
+                        c_1 = moire_r1 - moire_r2 / 2;
+                        c_2 = moire_r1 + moire_r2 / 2;
+
+                        for (int i = 0; i < Nx; i++)
+                        {
+                            for (int j = 0; j < Ny; j++)
+                            {
+                                #region Nastavitev pogojev
+
+                                R_ij = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y);
+                                R_ij = Math.Sqrt(R_ij);
+                                if (Math.Abs(R_ij) > (moire_r1 - moire_r2) && Math.Abs(R_ij) <= moire_r1)
+                                {
+                                    phi = phi0_upper + (R_ij - c_1) * Math.PI / moire_r2;
+                                }
+                                else if (Math.Abs(R_ij) > moire_r1 && Math.Abs(R_ij) <= (moire_r1 + moire_r2))
+                                {
+                                    phi = phi0_upper - (R_ij - c_2) * Math.PI / moire_r2;
+                                }
+                                else
+                                {
+                                    phi = phi0_upper + Math.PI / 2.0;
+                                }
+
+                                #endregion
+
+                                #region Izračun vrednosti
+
+                                Q1[i][j][Nz - 1] = tt * (1.0 / 6.0 - (Math.Cos(theta) * Math.Cos(theta)) / 2.0);
+                                Q2[i][j][Nz - 1] = tt * (Math.Sin(theta) * Math.Sin(theta) * Math.Cos(2.0 * phi)) / 2.0;
+                                Q3[i][j][Nz - 1] = tt * (Math.Sin(theta) * Math.Sin(theta) * Math.Sin(2.0 * phi)) / 2.0;
+                                Q4[i][j][Nz - 1] = tt * (Math.Sin(2.0 * theta) * Math.Cos(phi)) / 2.0;
+                                Q5[i][j][Nz - 1] = tt * (Math.Sin(2.0 * theta) * Math.Sin(phi)) / 2.0;
+
+                                Q1_n[i][j][Nz - 1] = Q1[i][j][Nz - 1];
+                                Q2_n[i][j][Nz - 1] = Q2[i][j][Nz - 1];
+                                Q3_n[i][j][Nz - 1] = Q3[i][j][Nz - 1];
+                                Q4_n[i][j][Nz - 1] = Q4[i][j][Nz - 1];
+                                Q5_n[i][j][Nz - 1] = Q5[i][j][Nz - 1];
+
+                                Q1_plate[i][j][1] = Q1[i][j][Nz - 1];
+                                Q2_plate[i][j][1] = Q2[i][j][Nz - 1];
+                                Q3_plate[i][j][1] = Q3[i][j][Nz - 1];
+                                Q4_plate[i][j][1] = Q4[i][j][Nz - 1];
+                                Q5_plate[i][j][1] = Q5[i][j][Nz - 1];
+
+                                #endregion
+                            }
+                        }
+
+                        #endregion
+
+                        #region Izpis
+
+                        dir = "Changing boundary";
+                        dir = Path.Combine(dir, "distance" + (moire_r2).ToString());
+
+                        if (!Directory.Exists(dir))
+                        {
+                            Directory.CreateDirectory(dir);
+                        }
+
+                        using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Parameters.txt"), false))
+                        {
+                            if (time_dependent)
+                            {
+                                writer.WriteLine("Model used: Time dependent");
+                            }
+                            else
+                            {
+                                writer.WriteLine("Model used: Time independent");
+                            }
+                            writer.WriteLine();
+
+                            writer.WriteLine("Nx: {0}  Ny: {1}  Nz: {2}", Nx, Ny, Nz);
+                            writer.WriteLine("a: {0}  Rmi: {1}  Rma: {2}", a, Rmi, Rma);
+                            writer.WriteLine("eps: {0}  kor: {1}  t: {2}", eps, kor, t);
+                            writer.WriteLine("w: {0}  BB: {1}  itmax: {2}", w, BB, itmax);
+                            writer.WriteLine("Ex: {0}  Ey: {1}  Ez: {2} ", Ex, Ey, Ez);
+                            writer.WriteLine("deps: {0}  homogeneous: {1} ", deps, E_homogeneous.Checked);
+                            writer.WriteLine();
+
+                            writer.WriteLine("interpolation : {0}  reset: {1}  different boundary: {1}", interpolation, reset, new_boundary);
+                            if (new_boundary)
+                            {
+                                writer.WriteLine("robni: {0}  N defektov: {1}", defekt, N_defektov);
+                                for (int i = 0; i < N_defektov; i++)
+                                {
+                                    writer.WriteLine("Defect {0,2}: m = {1,3}  x = {2,2}  y = {3,2}", i + 1, defekti_down[i][2], defekti_down[i][0], defekti_down[i][1]);
+                                }
+                            }
+                        }
+
+                        #endregion
+
+                        #region Izračun
+
+                        if (time_dependent)
+                        {
+                            Iteration_dt_dir(dir);
+                        }
+
+                        else
+                        {
+                            Iteration_dir(dir);
+                        }
+
+                        Angle_calculation_dir(dir);
+
+                        Izpis_rezultatov(dir);
+
+                        #endregion
                     }
-
-                    #endregion
-
-                    #region Izračun
-
-                    if (time_dependent)
-                    {
-                        Iteration_dt_dir(dir);
-                    }
-
-                    else
-                    {
-                        Iteration_dir(dir);
-                    }
-
-                    Angle_calculation_dir(dir);
-
-                    Izpis_rezultatov(dir);
-
-                    #endregion
                 }
+
+                #endregion
             }
 
             #endregion
