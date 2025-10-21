@@ -80,6 +80,7 @@
     </Compile>
     <Compile Include="integration.cs" />
     <Compile Include="interpolation.cs" />
+    <Compile Include="IO_functions.cs" />
     <Compile Include="linalg.cs" />
     <Compile Include="Mode_selection.cs">
       <SubType>Form</SubType>

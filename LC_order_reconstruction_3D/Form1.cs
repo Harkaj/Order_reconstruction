@@ -4612,6 +4612,7 @@ namespace LC_order_reconstruction_3D
 
                         string[] datoteka, data;
                         string[] separators = { "\t", " " };
+                        string add0;
 
                         int ii, jj, kk, file_n, factor;
                         double n_i, n_j, n_k, angle_y, angle_z, angle_3D_correctionx, angle_3D_correctiony;
@@ -4628,84 +4629,202 @@ namespace LC_order_reconstruction_3D
 
                         #endregion
 
+                        #region Setting up the multiple images script
+
+                        using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script.ini"), false))
+                        {
+                            writer.WriteLine("Input_File_Name=n_pov_script{0}_.pov", N_r.ToString());
+                            writer.WriteLine();
+                            writer.WriteLine("; these are the default values");
+                            writer.WriteLine("Initial_Clock=0.000");
+                            writer.WriteLine("Final_CLock=1.000");
+                            writer.WriteLine("Antialias=On");
+                            writer.WriteLine("Antialias_Threshold=0.05");
+                            writer.WriteLine();
+                            writer.WriteLine("Initial_Frame=0");
+                            writer.WriteLine("Final_Frame={0}", ofd.FileNames.Length - 1);
+                            writer.WriteLine();
+                            writer.WriteLine("Height=1024");
+                            writer.WriteLine("Width=1280");
+                        }
+
+                        using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + N_r.ToString() + "_.pov"), false))
+                        {
+                            writer.WriteLine("#include concat(\"n_pov_script{0}_\", str(frame_number, -3, 0), \".pov\")", N_r.ToString());
+                        }
+
+                        #endregion
+
                         foreach (string file in ofd.FileNames)
                         {
+                            #region Adding zeros in name
+
+                            add0 = null;
+                            if (file_n < 10) { add0 = "00"; }
+                            else if (file_n < 100) { add0 = "0"; }
+                            else { add0 = null; }
+
+                            #endregion
+
                             datoteka = File.ReadAllLines(file);
 
-                            using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + file_n.ToString() + ".pov"), false))
+                            if (zoom_in)
                             {
-                                #region Setting up the environment
-
-                                writer.WriteLine("#include \"colors.inc\"");
-                                writer.WriteLine("#include \"textures.inc\"");
-                                writer.WriteLine("#include \"shapes.inc\"");
-                                writer.WriteLine();
-
-                                writer.WriteLine("background { color White }");
-                                writer.WriteLine();
-
-                                writer.WriteLine("camera { orthographic");
-                                writer.WriteLine("  location <50, 50, -120>");
-                                writer.WriteLine("  look_at  <50, 50, 0>");
-                                writer.WriteLine("}");
-                                writer.WriteLine();
-
-                                writer.WriteLine("light_source { <50, 50, -50> color White shadowless");
-                                writer.WriteLine("               area_light <100, 0, 0>, <0, 100, 0>, 5, 5");
-                                writer.WriteLine("               adaptive 1 jitter }");
-                                writer.WriteLine();
-
-                                #endregion
-
-                                #region Writing the objects
-
-                                for (int i = 0; i < datoteka.Length; i++)
+                                using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + N_r.ToString() + "_" + add0 + file_n.ToString() + ".pov"), false))
                                 {
-                                    data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                                    #region Setting up the environment
 
-                                    ii = int.Parse(data[0]);
-                                    jj = int.Parse(data[1]);
-                                    kk = int.Parse(data[2]);
+                                    writer.WriteLine("#include \"colors.inc\"");
+                                    writer.WriteLine("#include \"textures.inc\"");
+                                    writer.WriteLine("#include \"shapes.inc\"");
+                                    writer.WriteLine();
 
-                                    if (ii % factor == 2 && kk % factor == 2 && jj == N_r)
+                                    writer.WriteLine("background { color White }");
+                                    writer.WriteLine();
+
+                                    writer.WriteLine("camera { orthographic");
+                                    writer.WriteLine("  location <{0}, {1}, -35>", zoom_x + 15, zoom_y + 15);
+                                    writer.WriteLine("  look_at  <{0}, {1}, 0>", zoom_x + 15, zoom_y + 15);
+                                    writer.WriteLine("}");
+                                    writer.WriteLine();
+
+                                    writer.WriteLine("light_source { <50, 50, -50> color White shadowless");
+                                    writer.WriteLine("               area_light <100, 0, 0>, <0, 100, 0>, 5, 5");
+                                    writer.WriteLine("               adaptive 1 jitter }");
+                                    writer.WriteLine();
+
+                                    #endregion
+
+                                    #region Writing the objects
+
+                                    for (int i = 0; i < datoteka.Length; i++)
                                     {
-                                        n_i = double.Parse(data[3]);
-                                        n_j = double.Parse(data[4]);
-                                        n_k = double.Parse(data[5]);
+                                        data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
-                                        angle_y = (180.0 * Math.Atan2(n_j, n_i)) / Math.PI;
-                                        //if (angle_y < 0.0)
-                                        //{
-                                        //    angle_y += 180.0;
-                                        //}
+                                        ii = int.Parse(data[0]);
+                                        jj = int.Parse(data[1]);
+                                        kk = int.Parse(data[2]);
 
-                                        angle_z = (180.0 * Math.Acos(n_k)) / Math.PI;
-                                        if (angle_z < 0.0 && angle_y > 90.0)
+                                        if (ii > zoom_x && ii < zoom_x + 30 && kk > zoom_y && kk < zoom_y + 30 && jj == N_r)
                                         {
-                                            angle_z += 180.0;
+                                            n_i = double.Parse(data[3]);
+                                            n_j = double.Parse(data[4]);
+                                            n_k = double.Parse(data[5]);
+
+                                            angle_y = (180.0 * Math.Atan2(n_j, n_i)) / Math.PI;
+                                            //if (angle_y < 0.0)
+                                            //{
+                                            //    angle_y += 180.0;
+                                            //}
+
+                                            angle_z = (180.0 * Math.Acos(n_k)) / Math.PI;
+                                            if (angle_z < 0.0 && angle_y > 90.0)
+                                            {
+                                                angle_z += 180.0;
+                                            }
+
+                                            angle_3D_correctiony = -(180.0 * Math.Atan2(kk - 50, 120)) / Math.PI;
+                                            angle_3D_correctionx = (180.0 * Math.Atan2(ii - 50, 120)) / Math.PI;
+
+                                            writer.WriteLine("object{");
+                                            writer.WriteLine("  Round_Cylinder");
+                                            writer.WriteLine("   (<0,-0.5,0>,<0,0.5,0>, 0.2, 0.1, 1)");
+                                            if (kk == 2 || kk == 98) { writer.WriteLine("  texture{ pigment{ color Blue}"); }
+                                            else { writer.WriteLine("  texture{ pigment{ color Green}"); }
+                                            writer.WriteLine("    finish { reflection 0.05 phong 1}");
+                                            writer.WriteLine("  }");
+                                            writer.WriteLine("  rotate<0,0,{0}>", (int)angle_z);
+                                            writer.WriteLine("  rotate<0,{0},0>", (int)angle_y);
+                                            //writer.WriteLine("  rotate<{0},{1},0>", (int)angle_3D_correctiony, (int)angle_3D_correctionx);
+                                            writer.WriteLine("  translate<{0},{1},0>", ii, kk);
+                                            writer.WriteLine("}");
+                                            writer.WriteLine();
                                         }
-
-                                        angle_3D_correctiony = -(180.0 * Math.Atan2(kk - 50, 120)) / Math.PI;
-                                        angle_3D_correctionx = (180.0 * Math.Atan2(ii - 50, 120)) / Math.PI;
-
-                                        writer.WriteLine("object{");
-                                        writer.WriteLine("  Round_Cylinder");
-                                        writer.WriteLine("   (<0,-2,0>,<0,2,0>, 0.8, 0.1, 1)");
-                                        if (kk == 2 || kk == 98) { writer.WriteLine("  texture{ pigment{ color Blue}"); }
-                                        else { writer.WriteLine("  texture{ pigment{ color Green}"); }
-                                        writer.WriteLine("    finish { reflection 0.05 phong 1}");
-                                        writer.WriteLine("  }");
-                                        writer.WriteLine("  rotate<0,0,{0}>", (int)angle_z);
-                                        writer.WriteLine("  rotate<0,{0},0>", (int)angle_y);
-                                        //writer.WriteLine("  rotate<{0},{1},0>", (int)angle_3D_correctiony, (int)angle_3D_correctionx);
-                                        writer.WriteLine("  translate<{0},{1},0>", ii, kk);
-                                        writer.WriteLine("}");
-                                        writer.WriteLine();
                                     }
-                                }
 
-                                #endregion
+                                    #endregion
+                                }
                             }
+
+                            else
+                            {
+                                using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + N_r.ToString() + "_" + add0 + file_n.ToString() + ".pov"), false))
+                                {
+                                    #region Setting up the environment
+
+                                    writer.WriteLine("#include \"colors.inc\"");
+                                    writer.WriteLine("#include \"textures.inc\"");
+                                    writer.WriteLine("#include \"shapes.inc\"");
+                                    writer.WriteLine();
+
+                                    writer.WriteLine("background { color White }");
+                                    writer.WriteLine();
+
+                                    writer.WriteLine("camera { orthographic");
+                                    writer.WriteLine("  location <50, 50, -120>");
+                                    writer.WriteLine("  look_at  <50, 50, 0>");
+                                    writer.WriteLine("}");
+                                    writer.WriteLine();
+
+                                    writer.WriteLine("light_source { <50, 50, -50> color White shadowless");
+                                    writer.WriteLine("               area_light <100, 0, 0>, <0, 100, 0>, 5, 5");
+                                    writer.WriteLine("               adaptive 1 jitter }");
+                                    writer.WriteLine();
+
+                                    #endregion
+
+                                    #region Writing the objects
+
+                                    for (int i = 0; i < datoteka.Length; i++)
+                                    {
+                                        data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+                                        ii = int.Parse(data[0]);
+                                        jj = int.Parse(data[1]);
+                                        kk = int.Parse(data[2]);
+
+                                        if (ii % factor == 2 && kk % factor == 2 && jj == N_r)
+                                        {
+                                            n_i = double.Parse(data[3]);
+                                            n_j = double.Parse(data[4]);
+                                            n_k = double.Parse(data[5]);
+
+                                            angle_y = (180.0 * Math.Atan2(n_j, n_i)) / Math.PI;
+                                            //if (angle_y < 0.0)
+                                            //{
+                                            //    angle_y += 180.0;
+                                            //}
+
+                                            angle_z = (180.0 * Math.Acos(n_k)) / Math.PI;
+                                            if (angle_z < 0.0 && angle_y > 90.0)
+                                            {
+                                                angle_z += 180.0;
+                                            }
+
+                                            angle_3D_correctiony = -(180.0 * Math.Atan2(kk - 50, 120)) / Math.PI;
+                                            angle_3D_correctionx = (180.0 * Math.Atan2(ii - 50, 120)) / Math.PI;
+
+                                            writer.WriteLine("object{");
+                                            writer.WriteLine("  Round_Cylinder");
+                                            writer.WriteLine("   (<0,-2,0>,<0,2,0>, 0.8, 0.1, 1)");
+                                            if (kk == 2 || kk == 98) { writer.WriteLine("  texture{ pigment{ color Blue}"); }
+                                            else { writer.WriteLine("  texture{ pigment{ color Green}"); }
+                                            writer.WriteLine("    finish { reflection 0.05 phong 1}");
+                                            writer.WriteLine("  }");
+                                            writer.WriteLine("  rotate<0,0,{0}>", (int)angle_z);
+                                            writer.WriteLine("  rotate<0,{0},0>", (int)angle_y);
+                                            //writer.WriteLine("  rotate<{0},{1},0>", (int)angle_3D_correctiony, (int)angle_3D_correctionx);
+                                            writer.WriteLine("  translate<{0},{1},0>", ii, kk);
+                                            writer.WriteLine("}");
+                                            writer.WriteLine();
+                                        }
+                                    }
+
+                                    #endregion
+                                }
+                            }
+
+                            file_n++;
                         }
                     }
                 }
