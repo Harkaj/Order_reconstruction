@@ -9,6 +9,11 @@ namespace LC_order_reconstruction_3D
 {
     public static class IO_functions
     {
+        /// <summary>
+        /// Creates .pov and .ini files for creating multiple POVray scripts
+        /// </summary>
+        /// <param name="dir">Location for the files</param>
+        /// <param name="N_files">Number of files</param>
         public static void POVray_ini_script(string dir, int N_files)
         {
             using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Script.ini"), false))
@@ -34,6 +39,12 @@ namespace LC_order_reconstruction_3D
             }
         }
 
+        /// <summary>
+        /// Creates .pov and .ini files for creating multiple POVray scripts
+        /// </summary>
+        /// <param name="dir">Location for the files</param>
+        /// <param name="N_files">Number of files</param>
+        /// <param name="N_r">Number of the plane</param>
         public static void POVray_ini_script(string dir, int N_files, int N_r)
         {
             using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Script.ini"), false))
@@ -59,7 +70,40 @@ namespace LC_order_reconstruction_3D
             }
         }
 
-        public static void POVray_environment(StreamWriter writer)
+        /// <summary>
+        /// Writes the POVray script for the environment setup
+        /// </summary>
+        /// <param name="writer">Writing tool reference</param>
+        public static void POVray_environment_3D(StreamWriter writer)
+        {
+            writer.WriteLine("#include \"colors.inc\"");
+            writer.WriteLine("#include \"textures.inc\"");
+            writer.WriteLine("#include \"shapes.inc\"");
+            writer.WriteLine();
+
+            writer.WriteLine("background { color White }");
+            writer.WriteLine();
+
+            writer.WriteLine("camera {");
+            writer.WriteLine("  location <130, 130, -80>");
+            writer.WriteLine("  look_at  <50, 30, 50>");
+            writer.WriteLine("}");
+            writer.WriteLine();
+
+            writer.WriteLine("light_source { <0, 0, -50> color White shadowless");
+            writer.WriteLine("               area_light <100, 0, 0>, <0, 100, 0>, 5, 2");
+            writer.WriteLine("               adaptive 1 jitter }");
+            writer.WriteLine();
+
+            writer.WriteLine("Wire_Box(<0,0,0>,<100,100,100>, 0.05, 0)");
+            writer.WriteLine();
+        }
+
+        /// <summary>
+        /// Writes the POVray script for the environment setup
+        /// </summary>
+        /// <param name="writer">Writing tool reference</param>
+        public static void POVray_environment_orthographic(StreamWriter writer)
         {
             writer.WriteLine("#include \"colors.inc\"");
             writer.WriteLine("#include \"textures.inc\"");
@@ -81,7 +125,13 @@ namespace LC_order_reconstruction_3D
             writer.WriteLine();
         }
 
-        public static void POVray_environment(StreamWriter writer, int zoom1, int zoom2)
+        /// <summary>
+        /// Writes the POVray script for the environment setup
+        /// </summary>
+        /// <param name="writer">Writing tool reference</param>
+        /// <param name="zoom1">Zoomed in location in first direction</param>
+        /// <param name="zoom2">Zoomed in location in second direction</param>
+        public static void POVray_environment_orthographic(StreamWriter writer, int zoom1, int zoom2)
         {
             writer.WriteLine("#include \"colors.inc\"");
             writer.WriteLine("#include \"textures.inc\"");
@@ -104,14 +154,84 @@ namespace LC_order_reconstruction_3D
         }
 
         /// <summary>
-        /// Writes the script for drawing the director field
+        /// Writes the POVray script for drawing points with high beta
+        /// </summary>
+        /// <param name="writer">Writing tool reference</param>
+        /// <param name="datoteka">Input file</param>
+        public static void POVray_beta(StreamWriter writer, string[] datoteka)
+        {
+            string[] data;
+            string[] separators = { "\t", " " };
+            int x_i, y_j, z_k;
+
+            writer.WriteLine("blob {");
+            writer.WriteLine("  threshold 0.9");
+
+            for (int i = 0; i < datoteka.Length; i++)
+            {
+                data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+                x_i = int.Parse(data[0]);
+                y_j = int.Parse(data[1]);
+                z_k = int.Parse(data[2]);
+
+                writer.WriteLine("  sphere {");
+                writer.WriteLine("           <{0},{1},{2}>, 2.5, 1.0", x_i + 1, z_k, y_j + 1);
+                writer.WriteLine("         }");
+            }
+
+            writer.WriteLine("   scale 1");
+            writer.WriteLine("   pigment {rgb <1,0,0>}");
+            writer.WriteLine("   finish { phong 0.8 }");
+            writer.WriteLine("}");
+            writer.WriteLine();
+        }
+
+        /// <summary>
+        /// Writes the POVray script for drawing points with high beta
+        /// </summary>
+        /// <param name="writer">Writing tool reference</param>
+        /// <param name="datoteka">Input file</param>
+        /// <param name="set">Set array determining colour</param>
+        public static void POVray_beta(StreamWriter writer, string[] datoteka, double[][][] set)
+        {
+            string[] data;
+            string[] separators = { "\t", " " };
+            int x_i, y_j, z_k;
+
+            writer.WriteLine("blob {");
+            writer.WriteLine("  threshold 0.9");
+
+            for (int i = 0; i < datoteka.Length; i++)
+            {
+                data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+                x_i = int.Parse(data[0]);
+                y_j = int.Parse(data[1]);
+                z_k = int.Parse(data[2]);
+
+                writer.WriteLine("  sphere {");
+                writer.WriteLine("           <{0},{1},{2}>, 2.5, 1.0", x_i + 1, z_k, y_j + 1);
+                writer.WriteLine("{{rgb<{0:F2},0,{1:F2}>}}", (1.0 + set[x_i][y_j][z_k]), set[x_i][y_j][z_k]);
+                writer.WriteLine("         }");
+            }
+
+            writer.WriteLine("   scale 1");
+            writer.WriteLine("   pigment {rgb <1,0,0>}");
+            writer.WriteLine("   finish { phong 0.8 }");
+            writer.WriteLine("}");
+            writer.WriteLine();
+        }
+
+        /// <summary>
+        /// Writes the POVray script for drawing the director field
         /// </summary>
         /// <param name="datoteka">Input file</param>
         /// <param name="writer">Writing tool reference</param>
         /// <param name="factor">Display each factor point</param>
         /// <param name="N_r">Plane number</param>
         /// <param name="plane_n">Plane (0-yz, 1-xz. 2-xy)</param>
-        public static void POVray_director_field(string[] datoteka, StreamWriter writer, int factor, int N_r, int plane_n)
+        public static void POVray_director_field(StreamWriter writer, string[] datoteka, int factor, int N_r, int plane_n)
         {
             string[] data;
             string[] separators = { "\t", " " };
@@ -163,15 +283,15 @@ namespace LC_order_reconstruction_3D
         }
 
         /// <summary>
-        /// Writes the script for drawing the director field
+        /// Writes the POVray script for drawing the director field
         /// </summary>
         /// <param name="datoteka">Input file</param>
         /// <param name="writer">Writing tool reference</param>
         /// <param name="zoom1">Zoomed in location in first direction</param>
-        /// <param name="zoom2">Zoomed in location in first direction</param>
+        /// <param name="zoom2">Zoomed in location in second direction</param>
         /// <param name="N_r">Plane number</param>
         /// <param name="plane_n">Plane (0-yz, 1-xz. 2-xy)</param>
-        public static void POVray_director_field(string[] datoteka, StreamWriter writer, int zoom1, int zoom2, int N_r, int plane_n)
+        public static void POVray_director_field(StreamWriter writer, string[] datoteka, int zoom1, int zoom2, int N_r, int plane_n)
         {
             string[] data;
             string[] separators = { "\t", " " };

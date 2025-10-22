@@ -3402,17 +3402,14 @@ namespace LC_order_reconstruction_3D
                         {
                             add0 = 3;
                         }
-
                         else if (ofd.FileNames.Length > 100)
                         {
                             add0 = 2;
                         }
-
                         else if (ofd.FileNames.Length > 10)
                         {
                             add0 = 1;
                         }
-
                         else
                         {
                             add0 = 0;
@@ -3607,122 +3604,6 @@ namespace LC_order_reconstruction_3D
 
                     #endregion
 
-                    #region S drawing (not currently used)
-                    /*
-                    OpenFileDialog ofd2 = new OpenFileDialog();
-                    ofd2.Multiselect = true;
-                    ofd2.Filter = "Text files (.txt and .dat)|*.txt; *.dat";
-
-                    if (ofd2.ShowDialog() == DialogResult.OK)
-                    {
-                        #region Initialization
-
-                        string[] datoteka, data;
-                        string[] separators = { "\t", " " };
-
-                        int file_n = 0;
-
-                        #endregion
-
-                        foreach (string file in ofd2.FileNames)
-                        {
-                            datoteka = File.ReadAllLines(file);
-
-                            #region Postavitev lokacij
-
-                            int[] x_i, y_j, z_k;
-                            double S, S_max;
-                            int[,,] S_field;
-
-                            S_max = 0.0;
-
-                            x_i = new int[datoteka.Length];
-                            y_j = new int[datoteka.Length];
-                            z_k = new int[datoteka.Length];
-
-                            Nx = 0;
-                            Ny = 0;
-                            Nz = 0;
-                            for (int i = 0; i < datoteka.Length; i++)
-                            {
-                                data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
-
-                                x_i[i] = int.Parse(data[0]);
-                                y_j[i] = int.Parse(data[1]);
-                                z_k[i] = int.Parse(data[2]);
-
-                                if (x_i[i] > Nx)
-                                {
-                                    Nx = x_i[i];
-                                }
-                                if (y_j[i] > Ny)
-                                {
-                                    Ny = y_j[i];
-                                }
-                                if (z_k[i] > Nz)
-                                {
-                                    Nz = z_k[i];
-                                }
-
-                                S = double.Parse(data[3]);
-                                if (S > S_max)
-                                {
-                                    S_max = S;
-                                }
-                            }
-                            Nx++;
-                            Ny++;
-                            Nz++;
-
-                            #endregion
-
-                            #region Izpis df3
-
-                            S_field = new int[Nx, Ny, Nz];
-
-                            for (int i = 0; i < datoteka.Length; i++)
-                            {
-                                data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
-
-                                S = double.Parse(data[3]);
-                                if (S < 0.0) { S = 0.0; }
-
-                                S_field[x_i[i], y_j[i], z_k[0]] = (int)(255.0 * (S / S_max));
-                            }
-
-                            using (BinaryWriter writer = new BinaryWriter(new FileStream("density_map" + file_n.ToString() + ".df3", FileMode.Create), Encoding.BigEndianUnicode))
-                            {
-                                char[] header = new char[3];
-                                char number;
-
-                                header[0] = (char)Nx;
-                                header[1] = (char)Ny;
-                                header[2] = (char)Nz;
-
-                                writer.Write(header);
-
-                                for (int k = 0; k < Nz; k++)
-                                {
-                                    for (int j = 0; j < Ny; j++)
-                                    {
-                                        for (int i = 0; i < Nx; i++)
-                                        {
-                                            //writer.WriteLine("{0}", S_field[i, j, k]);
-
-                                            number = (char)(S_field[i, j, k]);
-
-                                            writer.Write(number);
-                                        }
-                                    }
-                                }
-                            }
-
-                            #endregion
-                        }
-                    }
-                    */
-                    #endregion
-
                     #region Risanje S
 
                     OpenFileDialog ofd3 = new OpenFileDialog();
@@ -3733,16 +3614,13 @@ namespace LC_order_reconstruction_3D
                     {
                         #region Initialization
 
-                        string[] datoteka, data;
-                        string[] separators = { "\t", " " };
+                        string[] datoteka;
                         string added0 = null;
                         int add0;
-                        //int[][] d_points;
-                        double colour;
-
                         int file_n = 0;
 
                         string dir = "POVray files";
+                        dir = Path.Combine(dir, "3D_n+S");
                         if (!Directory.Exists(dir))
                         {
                             Directory.CreateDirectory(dir);
@@ -3777,11 +3655,7 @@ namespace LC_order_reconstruction_3D
                         foreach (string file in ofd3.FileNames)
                         {
                             datoteka = File.ReadAllLines(file);
-                            int x_i, y_j, z_k;
                             double[][][] set = POVrayblob_color(datoteka, d_points[file_n]);
-
-                            //d_points = Find_surface_defects(datoteka);
-                            //d_points = Find_surface_defects_basic(file_n); //Find currently only works in bulk calculations
 
                             #region Adding zeros in the name
 
@@ -3817,37 +3691,10 @@ namespace LC_order_reconstruction_3D
 
                             #endregion
 
-                            #region Izpis
-
                             using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + added0 + file_n.ToString() + ".pov"), true))
                             {
-                                writer.WriteLine("blob {");
-                                writer.WriteLine("  threshold 0.9");
-
-                                for (int i = 0; i < datoteka.Length; i++)
-                                {
-                                    data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
-
-                                    x_i = int.Parse(data[0]);
-                                    y_j = int.Parse(data[1]);
-                                    z_k = int.Parse(data[2]);
-
-                                    //colour = POVrayblob_color(x_i, y_j, z_k, d_points);
-
-                                    writer.WriteLine("  sphere {");
-                                    writer.Write("           <{0},{1},{2}>, 2.0, 1.0 pigment ", x_i + 1, 1.3 * z_k, y_j + 1, y_j + 2); //<{0},{1},{3}>,
-                                    writer.WriteLine("{{rgb<{0:F2},0,{1:F2}>}}", (1.0 + set[x_i][y_j][z_k]), set[x_i][y_j][z_k]);
-                                    writer.WriteLine("         }");
-                                }
-
-                                writer.WriteLine("   scale 1");
-                                writer.WriteLine("   pigment {rgb <1,0,0>}");
-                                writer.WriteLine("   finish { phong 0.8 }");
-                                writer.WriteLine("}");
-                                writer.WriteLine();
+                                IO_functions.POVray_beta(writer, datoteka, set);
                             }
-
-                            #endregion
 
                             file_n++;
                         }
@@ -3870,12 +3717,9 @@ namespace LC_order_reconstruction_3D
                     {
                         #region Initialization
 
-                        string[] datoteka, data;
-                        string[] separators = { "\t", " " };
+                        string[] datoteka;
                         string added0 = null;
-                        int add0;
-
-                        int x_i, y_j, z_k, file_n, value;
+                        int add0, file_n;
 
                         file_n = 0;
 
@@ -3886,25 +3730,10 @@ namespace LC_order_reconstruction_3D
                             Directory.CreateDirectory(dir);
                         }
 
-                        if (ofd.FileNames.Length > 1000)
-                        {
-                            add0 = 3;
-                        }
-
-                        else if (ofd.FileNames.Length > 100)
-                        {
-                            add0 = 2;
-                        }
-
-                        else if (ofd.FileNames.Length > 10)
-                        {
-                            add0 = 1;
-                        }
-
-                        else
-                        {
-                            add0 = 0;
-                        }
+                        if (ofd.FileNames.Length > 1000) { add0 = 3; }
+                        else if (ofd.FileNames.Length > 100) { add0 = 2; }
+                        else if (ofd.FileNames.Length > 10) { add0 = 1; }
+                        else { add0 = 0; }
 
                         #endregion
 
@@ -3946,59 +3775,10 @@ namespace LC_order_reconstruction_3D
 
                             #endregion
 
-                            using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "S_pov_script" + added0 + file_n.ToString() + ".pov"), false))
+                            using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Script" + added0 + file_n.ToString() + ".pov"), false))
                             {
-                                #region Setting up the environment
-
-                                writer.WriteLine("#include \"colors.inc\"");
-                                writer.WriteLine("#include \"textures.inc\"");
-                                writer.WriteLine("#include \"shapes.inc\"");
-                                writer.WriteLine();
-
-                                writer.WriteLine("background { color White }");
-                                writer.WriteLine();
-
-                                writer.WriteLine("camera {");
-                                writer.WriteLine("  location <130, 130, -80>");
-                                writer.WriteLine("  look_at  <50, 30, 50>");
-                                writer.WriteLine("}");
-                                writer.WriteLine();
-
-                                writer.WriteLine("light_source { <0, 0, -50> color White shadowless");
-                                writer.WriteLine("               area_light <100, 0, 0>, <0, 100, 0>, 5, 2");
-                                writer.WriteLine("               adaptive 1 jitter }");
-                                writer.WriteLine();
-
-                                writer.WriteLine("Wire_Box(<0,0,0>,<100,100,100>, 0.05, 0)");
-                                writer.WriteLine();
-
-                                #endregion
-
-                                #region Izpis
-
-                                writer.WriteLine("blob {");
-                                writer.WriteLine("  threshold 0.9");
-
-                                for (int i = 0; i < datoteka.Length; i++)
-                                {
-                                    data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
-
-                                    x_i = int.Parse(data[0]);
-                                    y_j = int.Parse(data[1]);
-                                    z_k = int.Parse(data[2]);
-
-                                    writer.WriteLine("  sphere {");
-                                    writer.WriteLine("           <{0},{1},{2}>, 2.5, 1.0", x_i + 1, z_k, y_j + 1, y_j + 2); //<{0},{1},{3}>,
-                                    writer.WriteLine("         }");
-                                }
-
-                                writer.WriteLine("   scale 1");
-                                writer.WriteLine("   pigment {rgb <1,0,0>}");
-                                writer.WriteLine("   finish { phong 0.8 }");
-                                writer.WriteLine("}");
-                                writer.WriteLine();
-
-                                #endregion
+                                IO_functions.POVray_environment_3D(writer);
+                                IO_functions.POVray_beta(writer, datoteka);
                             }
 
                             #region Second colour
@@ -4418,16 +4198,16 @@ namespace LC_order_reconstruction_3D
                             {
                                 using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Script" + N_r.ToString() + "_" + add0 + file_n.ToString() + ".pov"), false))
                                 {
-                                    IO_functions.POVray_environment(writer, zoom_x, zoom_y);
-                                    IO_functions.POVray_director_field(datoteka, writer, zoom_x, zoom_y, N_r, 2);
+                                    IO_functions.POVray_environment_orthographic(writer, zoom_x, zoom_y);
+                                    IO_functions.POVray_director_field(writer, datoteka, zoom_x, zoom_y, N_r, 2);
                                 }
                             }
                             else
                             {
                                 using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Script" + N_r.ToString() + "_" + add0 + file_n.ToString() + ".pov"), false))
                                 {
-                                    IO_functions.POVray_environment(writer);
-                                    IO_functions.POVray_director_field(datoteka, writer, factor_d, N_r, 2);
+                                    IO_functions.POVray_environment_orthographic(writer);
+                                    IO_functions.POVray_director_field(writer, datoteka, factor_d, N_r, 2);
                                 }
                             }
 
@@ -4488,16 +4268,16 @@ namespace LC_order_reconstruction_3D
                             {
                                 using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + N_r.ToString() + "_" + add0 + file_n.ToString() + ".pov"), false))
                                 {
-                                    IO_functions.POVray_environment(writer, zoom_x, zoom_y);
-                                    IO_functions.POVray_director_field(datoteka, writer, zoom_x, zoom_y, N_r, 1);
+                                    IO_functions.POVray_environment_orthographic(writer, zoom_x, zoom_y);
+                                    IO_functions.POVray_director_field(writer, datoteka, zoom_x, zoom_y, N_r, 1);
                                 }
                             }
                             else
                             {
                                 using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "n_pov_script" + N_r.ToString() + "_" + add0 + file_n.ToString() + ".pov"), false))
                                 {
-                                    IO_functions.POVray_environment(writer);
-                                    IO_functions.POVray_director_field(datoteka, writer, factor_d, N_r, 1);
+                                    IO_functions.POVray_environment_orthographic(writer);
+                                    IO_functions.POVray_director_field(writer, datoteka, factor_d, N_r, 1);
                                 }
                             }
 
@@ -4556,16 +4336,16 @@ namespace LC_order_reconstruction_3D
                             {
                                 using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Script" + N_r.ToString() + "_" + add0 + file_n.ToString() + ".pov"), false))
                                 {
-                                    IO_functions.POVray_environment(writer, zoom_x, zoom_y);
-                                    IO_functions.POVray_director_field(datoteka, writer, zoom_x, zoom_y, N_r, 0);
+                                    IO_functions.POVray_environment_orthographic(writer, zoom_x, zoom_y);
+                                    IO_functions.POVray_director_field(writer, datoteka, zoom_x, zoom_y, N_r, 0);
                                 }
                             }
                             else
                             {
                                 using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Script" + N_r.ToString() + "_" + add0 + file_n.ToString() + ".pov"), false))
                                 {
-                                    IO_functions.POVray_environment(writer);
-                                    IO_functions.POVray_director_field(datoteka, writer, factor_d, N_r, 1);
+                                    IO_functions.POVray_environment_orthographic(writer);
+                                    IO_functions.POVray_director_field(writer, datoteka, factor_d, N_r, 1);
                                 }
                             }
 
