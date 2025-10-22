@@ -7,9 +7,9 @@ using System.IO;
 
 namespace LC_order_reconstruction_3D
 {
-    class IO_functions
+    public static class IO_functions
     {
-        void POVray_ini_script(string dir, int N_file)
+        public static void POVray_ini_script(string dir, int N_files)
         {
             using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Script.ini"), false))
             {
@@ -22,7 +22,7 @@ namespace LC_order_reconstruction_3D
                 writer.WriteLine("Antialias_Threshold=0.05");
                 writer.WriteLine();
                 writer.WriteLine("Initial_Frame=0");
-                writer.WriteLine("Final_Frame={0}", N_file);
+                writer.WriteLine("Final_Frame={0}", N_files);
                 writer.WriteLine();
                 writer.WriteLine("Height=1024");
                 writer.WriteLine("Width=1280");
@@ -34,7 +34,7 @@ namespace LC_order_reconstruction_3D
             }
         }
 
-        void POVray_ini_script(string dir, int N_r, int N_file)
+        public static void POVray_ini_script(string dir, int N_files, int N_r)
         {
             using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Script.ini"), false))
             {
@@ -47,7 +47,7 @@ namespace LC_order_reconstruction_3D
                 writer.WriteLine("Antialias_Threshold=0.05");
                 writer.WriteLine();
                 writer.WriteLine("Initial_Frame=0");
-                writer.WriteLine("Final_Frame={0}", N_file);
+                writer.WriteLine("Final_Frame={0}", N_files);
                 writer.WriteLine();
                 writer.WriteLine("Height=1024");
                 writer.WriteLine("Width=1280");
@@ -59,7 +59,7 @@ namespace LC_order_reconstruction_3D
             }
         }
 
-        void POVray_environment(StreamWriter writer)
+        public static void POVray_environment(StreamWriter writer)
         {
             writer.WriteLine("#include \"colors.inc\"");
             writer.WriteLine("#include \"textures.inc\"");
@@ -81,7 +81,7 @@ namespace LC_order_reconstruction_3D
             writer.WriteLine();
         }
 
-        void POVray_environment(StreamWriter writer, int zoom1, int zoom2)
+        public static void POVray_environment(StreamWriter writer, int zoom1, int zoom2)
         {
             writer.WriteLine("#include \"colors.inc\"");
             writer.WriteLine("#include \"textures.inc\"");
@@ -103,46 +103,119 @@ namespace LC_order_reconstruction_3D
             writer.WriteLine();
         }
 
-        void POVray_director_field(string[] datoteka, StreamWriter writer, int zoom1, int zoom2, int N_r, int plane_n)
+        /// <summary>
+        /// Writes the script for drawing the director field
+        /// </summary>
+        /// <param name="datoteka">Input file</param>
+        /// <param name="writer">Writing tool reference</param>
+        /// <param name="factor">Display each factor point</param>
+        /// <param name="N_r">Plane number</param>
+        /// <param name="plane_n">Plane (0-yz, 1-xz. 2-xy)</param>
+        public static void POVray_director_field(string[] datoteka, StreamWriter writer, int factor, int N_r, int plane_n)
         {
             string[] data;
             string[] separators = { "\t", " " };
-            int ii, jj, kk, plane;
-            double n_i, n_j, n_k, angle1, angle2;
+            int ii, jj, plane, axis1, axis2, temp;
+            double[] n_img = new double[3];
 
             for (int i = 0; i < datoteka.Length; i++)
             {
                 data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
+                #region Setting up display pane
+
                 plane = int.Parse(data[plane_n]);
                 if (plane != N_r) { continue; }
 
-                ii = int.Parse(data[0]);
-                jj = int.Parse(data[1]);
-                kk = int.Parse(data[2]);
-
-                if (ii > zoom1 && ii < zoom1 + 30 && kk > zoom2 && kk < zoom2 + 30)
+                axis1 = plane_n + 1;
+                if (axis1 > 2) { axis1 = 0; }
+                axis2 = plane_n - 1;
+                if (axis2 < 0) { axis2 = 2; }
+                if (axis2 < axis1)
                 {
-                    n_i = double.Parse(data[3]);
-                    n_j = double.Parse(data[4]);
-                    n_k = double.Parse(data[5]);
+                    temp = axis1;
+                    axis1 = axis2;
+                    axis2 = temp;
+                }
 
-                    angle1 = (180.0 * Math.Atan2(n_j, n_i)) / Math.PI;
-                    angle2 = (180.0 * Math.Acos(n_k)) / Math.PI;
-                    if (angle2 < 0.0 && angle1 > 90.0)
-                    {
-                        angle2 += 180.0;
-                    }
+                #endregion
+
+                ii = int.Parse(data[axis1]);
+                jj = int.Parse(data[axis2]);
+
+                if (ii % factor == 0 && jj % factor == 0)
+                {
+                    n_img[0] = double.Parse(data[axis1 + 3]);
+                    n_img[1] = double.Parse(data[axis2 + 3]);
+                    n_img[2] = double.Parse(data[plane_n + 3]);
 
                     writer.WriteLine("object{");
                     writer.WriteLine("  Round_Cylinder");
-                    writer.WriteLine("   (<0,-0.5,0>,<0,0.5,0>, 0.2, 0.1, 1)");
+                    writer.WriteLine("   (<{0},{1},{2}>,<{3},{4},{5}>, 0.8, 0.1, 1)", -n_img[0] * 2.0, -n_img[1] * 2.0, -n_img[2] * 2.0, n_img[0] * 2.0, n_img[1] * 2.0, n_img[2] * 2.0);
                     writer.WriteLine("    texture { pigment { color Green }");
                     writer.WriteLine("    finish { reflection 0.05 phong 1 }");
                     writer.WriteLine("  }");
-                    writer.WriteLine("  rotate<0,0,{0}>", (int)angle2);
-                    writer.WriteLine("  rotate<0,{0},0>", (int)angle1);
-                    writer.WriteLine("  translate<{0},{1},0>", ii, kk);
+                    writer.WriteLine("  translate<{0},{1},0>", ii, jj);
+                    writer.WriteLine("}");
+                    writer.WriteLine();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes the script for drawing the director field
+        /// </summary>
+        /// <param name="datoteka">Input file</param>
+        /// <param name="writer">Writing tool reference</param>
+        /// <param name="zoom1">Zoomed in location in first direction</param>
+        /// <param name="zoom2">Zoomed in location in first direction</param>
+        /// <param name="N_r">Plane number</param>
+        /// <param name="plane_n">Plane (0-yz, 1-xz. 2-xy)</param>
+        public static void POVray_director_field(string[] datoteka, StreamWriter writer, int zoom1, int zoom2, int N_r, int plane_n)
+        {
+            string[] data;
+            string[] separators = { "\t", " " };
+            int ii, jj, plane, axis1, axis2, temp;
+            double[] n_img = new double[3];
+
+            for (int i = 0; i < datoteka.Length; i++)
+            {
+                data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+                #region Setting up display pane
+
+                plane = int.Parse(data[plane_n]);
+                if (plane != N_r) { continue; }
+
+                axis1 = plane_n + 1;
+                if (axis1 > 2) { axis1 = 0; }
+                axis2 = plane_n - 1;
+                if (axis2 < 0) { axis2 = 2; }
+                if (axis2 < axis1)
+                {
+                    temp = axis1;
+                    axis1 = axis2;
+                    axis2 = temp;
+                }
+
+                #endregion
+
+                ii = int.Parse(data[axis1]);
+                jj = int.Parse(data[axis2]);
+
+                if (ii > zoom1 && ii < zoom1 + 30 && jj > zoom2 && jj < zoom2 + 30)
+                {
+                    n_img[0] = double.Parse(data[axis1 + 3]);
+                    n_img[1] = double.Parse(data[axis2 + 3]);
+                    n_img[2] = double.Parse(data[plane_n + 3]);
+
+                    writer.WriteLine("object{");
+                    writer.WriteLine("  Round_Cylinder");
+                    writer.WriteLine("   (<{0},{1},{2}>,<{3},{4},{5}>, 0.2, 0.1, 1)", -n_img[0] / 2.0, -n_img[1] / 2.0, -n_img[2] / 2.0, n_img[0] / 2.0, n_img[1] / 2.0, n_img[2] / 2.0);
+                    writer.WriteLine("    texture { pigment { color Green }");
+                    writer.WriteLine("    finish { reflection 0.05 phong 1 }");
+                    writer.WriteLine("  }");
+                    writer.WriteLine("  translate<{0},{1},0>", ii, jj);
                     writer.WriteLine("}");
                     writer.WriteLine();
                 }

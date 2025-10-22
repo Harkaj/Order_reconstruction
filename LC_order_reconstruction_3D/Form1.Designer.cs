@@ -219,6 +219,10 @@
             this.Redraw = new System.Windows.Forms.Button();
             this.Start_interferometry = new System.Windows.Forms.Button();
             this.POVray_tab = new System.Windows.Forms.TabPage();
+            this.Min_y_l = new System.Windows.Forms.Label();
+            this.Min_y_n = new System.Windows.Forms.NumericUpDown();
+            this.Min_x_l = new System.Windows.Forms.Label();
+            this.Min_x_n = new System.Windows.Forms.NumericUpDown();
             this.Zoom_in = new System.Windows.Forms.CheckBox();
             this.label10 = new System.Windows.Forms.Label();
             this.POV_n_ravnine = new System.Windows.Forms.NumericUpDown();
@@ -226,10 +230,8 @@
             this.Other_tab = new System.Windows.Forms.TabPage();
             this.Zunanji_B = new System.Windows.Forms.GroupBox();
             this.B_n = new System.Windows.Forms.NumericUpDown();
-            this.label17 = new System.Windows.Forms.Label();
-            this.Min_y_n = new System.Windows.Forms.NumericUpDown();
-            this.label18 = new System.Windows.Forms.Label();
-            this.Min_x_n = new System.Windows.Forms.NumericUpDown();
+            this.factor_num = new System.Windows.Forms.NumericUpDown();
+            this.factor_l = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BB_n)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.w_n)).BeginInit();
@@ -307,11 +309,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.lambda_n)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.error_n)).BeginInit();
             this.POVray_tab.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Min_y_n)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Min_x_n)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.POV_n_ravnine)).BeginInit();
             this.Zunanji_B.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.B_n)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Min_y_n)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Min_x_n)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.factor_num)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox1
@@ -3310,9 +3313,11 @@
             // POVray_tab
             // 
             this.POVray_tab.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.POVray_tab.Controls.Add(this.label17);
+            this.POVray_tab.Controls.Add(this.factor_l);
+            this.POVray_tab.Controls.Add(this.factor_num);
+            this.POVray_tab.Controls.Add(this.Min_y_l);
             this.POVray_tab.Controls.Add(this.Min_y_n);
-            this.POVray_tab.Controls.Add(this.label18);
+            this.POVray_tab.Controls.Add(this.Min_x_l);
             this.POVray_tab.Controls.Add(this.Min_x_n);
             this.POVray_tab.Controls.Add(this.Zoom_in);
             this.POVray_tab.Controls.Add(this.label10);
@@ -3325,6 +3330,80 @@
             this.POVray_tab.TabIndex = 4;
             this.POVray_tab.Text = "POV Ray";
             // 
+            // Min_y_l
+            // 
+            this.Min_y_l.AutoSize = true;
+            this.Min_y_l.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.Min_y_l.Location = new System.Drawing.Point(8, 176);
+            this.Min_y_l.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Min_y_l.Name = "Min_y_l";
+            this.Min_y_l.Size = new System.Drawing.Size(65, 25);
+            this.Min_y_l.TabIndex = 123;
+            this.Min_y_l.Text = "Min y:";
+            this.Min_y_l.Visible = false;
+            // 
+            // Min_y_n
+            // 
+            this.Min_y_n.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.Min_y_n.Location = new System.Drawing.Point(93, 174);
+            this.Min_y_n.Margin = new System.Windows.Forms.Padding(4);
+            this.Min_y_n.Maximum = new decimal(new int[] {
+            150,
+            0,
+            0,
+            0});
+            this.Min_y_n.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.Min_y_n.Name = "Min_y_n";
+            this.Min_y_n.Size = new System.Drawing.Size(65, 30);
+            this.Min_y_n.TabIndex = 122;
+            this.Min_y_n.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.Min_y_n.Visible = false;
+            // 
+            // Min_x_l
+            // 
+            this.Min_x_l.AutoSize = true;
+            this.Min_x_l.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.Min_x_l.Location = new System.Drawing.Point(8, 135);
+            this.Min_x_l.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Min_x_l.Name = "Min_x_l";
+            this.Min_x_l.Size = new System.Drawing.Size(65, 25);
+            this.Min_x_l.TabIndex = 121;
+            this.Min_x_l.Text = "Min x:";
+            this.Min_x_l.Visible = false;
+            // 
+            // Min_x_n
+            // 
+            this.Min_x_n.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.Min_x_n.Location = new System.Drawing.Point(93, 133);
+            this.Min_x_n.Margin = new System.Windows.Forms.Padding(4);
+            this.Min_x_n.Maximum = new decimal(new int[] {
+            150,
+            0,
+            0,
+            0});
+            this.Min_x_n.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.Min_x_n.Name = "Min_x_n";
+            this.Min_x_n.Size = new System.Drawing.Size(65, 30);
+            this.Min_x_n.TabIndex = 120;
+            this.Min_x_n.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.Min_x_n.Visible = false;
+            // 
             // Zoom_in
             // 
             this.Zoom_in.AutoSize = true;
@@ -3336,6 +3415,7 @@
             this.Zoom_in.TabIndex = 119;
             this.Zoom_in.Text = "Zoom in";
             this.Zoom_in.UseVisualStyleBackColor = true;
+            this.Zoom_in.CheckedChanged += new System.EventHandler(this.Zoom_in_CheckedChanged);
             // 
             // label10
             // 
@@ -3434,75 +3514,40 @@
             this.B_n.Size = new System.Drawing.Size(73, 30);
             this.B_n.TabIndex = 91;
             // 
-            // label17
+            // factor_num
             // 
-            this.label17.AutoSize = true;
-            this.label17.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label17.Location = new System.Drawing.Point(8, 176);
-            this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(59, 25);
-            this.label17.TabIndex = 123;
-            this.label17.Text = "Min y";
-            // 
-            // Min_y_n
-            // 
-            this.Min_y_n.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.Min_y_n.Location = new System.Drawing.Point(81, 174);
-            this.Min_y_n.Margin = new System.Windows.Forms.Padding(4);
-            this.Min_y_n.Maximum = new decimal(new int[] {
-            150,
-            0,
-            0,
-            0});
-            this.Min_y_n.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.Min_y_n.Name = "Min_y_n";
-            this.Min_y_n.Size = new System.Drawing.Size(65, 30);
-            this.Min_y_n.TabIndex = 122;
-            this.Min_y_n.Value = new decimal(new int[] {
+            this.factor_num.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.factor_num.Location = new System.Drawing.Point(93, 133);
+            this.factor_num.Margin = new System.Windows.Forms.Padding(4);
+            this.factor_num.Maximum = new decimal(new int[] {
             10,
             0,
             0,
             0});
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label18.Location = new System.Drawing.Point(8, 135);
-            this.label18.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(65, 25);
-            this.label18.TabIndex = 121;
-            this.label18.Text = "Min x:";
-            // 
-            // Min_x_n
-            // 
-            this.Min_x_n.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.Min_x_n.Location = new System.Drawing.Point(81, 133);
-            this.Min_x_n.Margin = new System.Windows.Forms.Padding(4);
-            this.Min_x_n.Maximum = new decimal(new int[] {
-            150,
-            0,
-            0,
-            0});
-            this.Min_x_n.Minimum = new decimal(new int[] {
+            this.factor_num.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
-            this.Min_x_n.Name = "Min_x_n";
-            this.Min_x_n.Size = new System.Drawing.Size(65, 30);
-            this.Min_x_n.TabIndex = 120;
-            this.Min_x_n.Value = new decimal(new int[] {
-            10,
+            this.factor_num.Name = "factor_num";
+            this.factor_num.Size = new System.Drawing.Size(65, 30);
+            this.factor_num.TabIndex = 124;
+            this.factor_num.Value = new decimal(new int[] {
+            4,
             0,
             0,
             0});
+            // 
+            // factor_l
+            // 
+            this.factor_l.AutoSize = true;
+            this.factor_l.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.factor_l.Location = new System.Drawing.Point(8, 135);
+            this.factor_l.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.factor_l.Name = "factor_l";
+            this.factor_l.Size = new System.Drawing.Size(73, 25);
+            this.factor_l.TabIndex = 125;
+            this.factor_l.Text = "Factor:";
             // 
             // Form1
             // 
@@ -3618,11 +3663,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.error_n)).EndInit();
             this.POVray_tab.ResumeLayout(false);
             this.POVray_tab.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.Min_y_n)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Min_x_n)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.POV_n_ravnine)).EndInit();
             this.Zunanji_B.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.B_n)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Min_y_n)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Min_x_n)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.factor_num)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -3827,10 +3873,12 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.NumericUpDown POV_n_ravnine;
         private System.Windows.Forms.CheckBox Zoom_in;
-        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Label Min_y_l;
         private System.Windows.Forms.NumericUpDown Min_y_n;
-        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.Label Min_x_l;
         private System.Windows.Forms.NumericUpDown Min_x_n;
+        private System.Windows.Forms.Label factor_l;
+        private System.Windows.Forms.NumericUpDown factor_num;
     }
 }
 
