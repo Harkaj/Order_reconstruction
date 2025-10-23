@@ -71,7 +71,7 @@ namespace LC_order_reconstruction_3D
         }
 
         /// <summary>
-        /// Writes the POVray script for the environment setup
+        /// Writes the POVray script for the 3D view environment setup
         /// </summary>
         /// <param name="writer">Writing tool reference</param>
         public static void POVray_environment_3D(StreamWriter writer)
@@ -96,6 +96,49 @@ namespace LC_order_reconstruction_3D
             writer.WriteLine();
 
             writer.WriteLine("Wire_Box(<0,0,0>,<100,100,100>, 0.05, 0)");
+            writer.WriteLine();
+        }
+
+        /// <summary>
+        /// Writes the POVray script for the 3D view environment setup
+        /// </summary>
+        /// <param name="writer">Writing tool reference</param>
+        /// <param name="Nx">System size in x</param>
+        /// <param name="Ny">System size in y</param>
+        /// <param name="Nz">System size in z</param>
+        public static void POVray_environment_3D(StreamWriter writer, int Nx, int Ny, int Nz)
+        {
+            writer.WriteLine("#include \"colors.inc\"");
+            writer.WriteLine("#include \"textures.inc\"");
+            writer.WriteLine("#include \"shapes.inc\"");
+            writer.WriteLine();
+
+            writer.WriteLine("background { color White }");
+            writer.WriteLine();
+
+            if (Nx == 200)
+            {
+                writer.WriteLine("camera {");
+                writer.WriteLine("  location <150, 150, -150>");
+                writer.WriteLine("  look_at  <80, 0, 120>");
+                writer.WriteLine("}");
+                writer.WriteLine();
+            }
+            else
+            {
+                writer.WriteLine("camera {");
+                writer.WriteLine("  location <130, 150, -80>");
+                writer.WriteLine("  look_at  <50, 30, 50>");
+                writer.WriteLine("}");
+                writer.WriteLine();
+            }
+
+            writer.WriteLine("light_source { <0, 0, -50> color White shadowless");
+            writer.WriteLine("               area_light <100, 0, 0>, <0, 100, 0>, 5, 2");
+            writer.WriteLine("               adaptive 1 jitter }");
+            writer.WriteLine();
+
+            writer.WriteLine("Wire_Box(<-3,0,-3>,<{0},{2},{1}>, 0.05, 0)", Nx + 6, Ny + 3, Nz);
             writer.WriteLine();
         }
 
@@ -150,6 +193,70 @@ namespace LC_order_reconstruction_3D
             writer.WriteLine("light_source { <50, 50, -50> color White shadowless");
             writer.WriteLine("               area_light <100, 0, 0>, <0, 100, 0>, 5, 5");
             writer.WriteLine("               adaptive 1 jitter }");
+            writer.WriteLine();
+        }
+
+        /// <summary>
+        /// Writes the POVray script for drawing locations of surface defects
+        /// </summary>
+        /// <param name="writer">Writing tool reference</param>
+        public static void POVray_surface_defects(StreamWriter writer)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    if ((i + j) % 2 == 0)
+                    {
+                        writer.WriteLine("  sphere { <0,0,0>, 1.5 scale <1,0.2,1> ");
+                    }
+                    else
+                    {
+                        writer.WriteLine("  torus { 1.0, 0.5 scale <1,0.2,1> ");
+                    }
+
+                    writer.WriteLine("          texture { pigment{ color rgb <1,0,0>}");
+                    writer.WriteLine("                    finish { reflection 0.05 phong 0.1}");
+                    writer.WriteLine("                  }");
+                    writer.WriteLine("          rotate <90,0,0>");
+                    writer.WriteLine("          translate <{0},{1},-2>", (i + 1) * 40, (j + 1) * 40);
+                    writer.WriteLine("        }");
+                    writer.WriteLine();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes the POVray script for drawing points with high beta on a 2D plane
+        /// </summary>
+        /// <param name="writer">Writing tool reference</param>
+        /// <param name="datoteka">Input file</param>
+        public static void POVray_beta_2D(StreamWriter writer, string[] datoteka)
+        {
+            string[] data;
+            string[] separators = { "\t", " " };
+            int x_i, y_j, z_k;
+
+            writer.WriteLine("blob {");
+            writer.WriteLine("  threshold 0.99");
+
+            for (int i = 0; i < datoteka.Length; i++)
+            {
+                data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+                x_i = int.Parse(data[0]);
+                y_j = int.Parse(data[1]);
+                z_k = int.Parse(data[2]);
+
+                writer.WriteLine("  sphere {");
+                writer.WriteLine("           <{0},{1},0>, 1.2, 1.0", x_i + 1, y_j + 1);
+                writer.WriteLine("         }");
+            }
+
+            writer.WriteLine("   scale 1");
+            writer.WriteLine("   pigment {rgb <0,0,0>}");
+            writer.WriteLine("   finish { phong 0.8 }");
+            writer.WriteLine("}");
             writer.WriteLine();
         }
 
@@ -211,7 +318,7 @@ namespace LC_order_reconstruction_3D
                 z_k = int.Parse(data[2]);
 
                 writer.WriteLine("  sphere {");
-                writer.WriteLine("           <{0},{1},{2}>, 2.5, 1.0", x_i + 1, z_k, y_j + 1);
+                writer.Write("           <{0},{1},{2}>, 2.5, 1.0 pigment ", x_i + 1, z_k, y_j + 1);
                 writer.WriteLine("{{rgb<{0:F2},0,{1:F2}>}}", (1.0 + set[x_i][y_j][z_k]), set[x_i][y_j][z_k]);
                 writer.WriteLine("         }");
             }
@@ -221,6 +328,49 @@ namespace LC_order_reconstruction_3D
             writer.WriteLine("   finish { phong 0.8 }");
             writer.WriteLine("}");
             writer.WriteLine();
+        }
+
+        /// <summary>
+        /// Writes the POVray script for drawing the director field
+        /// </summary>
+        /// <param name="datoteka">Input file</param>
+        /// <param name="writer">Writing tool reference</param>
+        /// <param name="factor">Display each factor point</param>
+        /// <param name="N_r">Plane number</param>
+        public static void POVray_director_field(StreamWriter writer, string[] datoteka, int factor, int N_r)
+        {
+            string[] data;
+            string[] separators = { "\t", " " };
+            int ii, jj, kk;
+            double[] n_img = new double[3];
+
+            for (int i = 0; i < datoteka.Length; i++)
+            {
+                data = datoteka[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+                ii = int.Parse(data[0]);
+                jj = int.Parse(data[1]);
+                kk = int.Parse(data[2]);
+
+                if (kk != N_r) { continue; }
+
+                if (ii % factor == 0 && jj % factor == 0)
+                {
+                    n_img[0] = double.Parse(data[3]);
+                    n_img[1] = double.Parse(data[4]);
+                    n_img[2] = double.Parse(data[5]);
+
+                    writer.WriteLine("object{");
+                    writer.WriteLine("  Round_Cylinder");
+                    writer.WriteLine("   (<{0},{2},{1}>,<{3},{5},{4}>, 1.0, 0.2, 1)", -n_img[0] * 3.0, -n_img[1] * 3.0, -n_img[2] * 3.0, n_img[0] * 3.0, n_img[1] * 3.0, n_img[2] * 3.0);
+                    writer.WriteLine("    texture { pigment { color Green }");
+                    writer.WriteLine("    finish { reflection 0.05 phong 1 }");
+                    writer.WriteLine("  }");
+                    writer.WriteLine("  translate<{0},{2},{1}>", ii, jj, kk);
+                    writer.WriteLine("}");
+                    writer.WriteLine();
+                }
+            }
         }
 
         /// <summary>

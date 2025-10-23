@@ -232,6 +232,7 @@
             this.B_n = new System.Windows.Forms.NumericUpDown();
             this.factor_num = new System.Windows.Forms.NumericUpDown();
             this.factor_l = new System.Windows.Forms.Label();
+            this.POVray_plane = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BB_n)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.w_n)).BeginInit();
@@ -3313,6 +3314,7 @@
             // POVray_tab
             // 
             this.POVray_tab.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.POVray_tab.Controls.Add(this.POVray_plane);
             this.POVray_tab.Controls.Add(this.factor_l);
             this.POVray_tab.Controls.Add(this.factor_num);
             this.POVray_tab.Controls.Add(this.Min_y_l);
@@ -3455,9 +3457,7 @@
             "3D with n and S",
             "3D with S",
             "2D with S",
-            "2D in xy",
-            "2D in xz",
-            "2D in yz",
+            "2D n (select plane)",
             "3D with intermittent n"});
             this.POVray_mode.Location = new System.Drawing.Point(8, 16);
             this.POVray_mode.Margin = new System.Windows.Forms.Padding(4);
@@ -3548,6 +3548,21 @@
             this.factor_l.Size = new System.Drawing.Size(73, 25);
             this.factor_l.TabIndex = 125;
             this.factor_l.Text = "Factor:";
+            // 
+            // POVray_plane
+            // 
+            this.POVray_plane.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.POVray_plane.FormattingEnabled = true;
+            this.POVray_plane.Items.AddRange(new object[] {
+            "yz",
+            "xz",
+            "xy"});
+            this.POVray_plane.Location = new System.Drawing.Point(201, 16);
+            this.POVray_plane.Margin = new System.Windows.Forms.Padding(4);
+            this.POVray_plane.Name = "POVray_plane";
+            this.POVray_plane.Size = new System.Drawing.Size(138, 33);
+            this.POVray_plane.TabIndex = 126;
+            this.POVray_plane.Text = "Select plane";
             // 
             // Form1
             // 
@@ -3879,6 +3894,7 @@
         private System.Windows.Forms.NumericUpDown Min_x_n;
         private System.Windows.Forms.Label factor_l;
         private System.Windows.Forms.NumericUpDown factor_num;
+        private System.Windows.Forms.ComboBox POVray_plane;
     }
 }
 
