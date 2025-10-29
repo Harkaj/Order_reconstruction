@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Class_library;
 
 namespace LC_order_reconstruction_3D
 {
@@ -13430,6 +13431,8 @@ namespace LC_order_reconstruction_3D
 
             #endregion
 
+            #region Output
+
             using (StreamWriter writer = new StreamWriter("streamlines.txt", false))
             {
                 for (int i = 0; i < lines.Count; i++)
@@ -13441,53 +13444,13 @@ namespace LC_order_reconstruction_3D
                     writer.WriteLine();
                 }
             }
-            using (StreamWriter writer = new StreamWriter("streamlines.pov", false))
+            using (StreamWriter writer = new StreamWriter("Streamlines.pov", false))
             {
-                #region Setting up the environment
-
-                writer.WriteLine("#include \"colors.inc\"");
-                writer.WriteLine("#include \"textures.inc\"");
-                writer.WriteLine("#include \"shapes.inc\"");
-                writer.WriteLine();
-
-                writer.WriteLine("background { color White }");
-                writer.WriteLine();
-
-                writer.WriteLine("camera {");
-                writer.WriteLine("  location <50, 50, -120>");
-                writer.WriteLine("  look_at  <50, 50, 0>");
-                writer.WriteLine("}");
-                writer.WriteLine();
-
-                writer.WriteLine("light_source { <50, 50, -50> color White shadowless");
-                writer.WriteLine("               area_light <100, 0, 0>, <0, 100, 0>, 5, 5");
-                writer.WriteLine("               adaptive 1 jitter }");
-                writer.WriteLine();
-
-                #endregion
-
-                for (int i = 0; i < lines.Count / 2; i++)
-                {
-                    if (lines[i].Count < 50)
-                    {
-                        continue;
-                    }
-
-                    writer.Write("sphere_sweep { cubic_spline ");
-                    if (lines[i].Count % 10 == 0) { writer.Write(lines[i].Count / 10); }
-                    else { writer.Write(lines[i].Count / 10 + 1); }
-                    writer.WriteLine(", ");
-                    for (int j = 0; j < lines[i].Count; j+=10)
-                    {
-                        writer.WriteLine("  <{0:F3},{1:F3},0>, 0.2", lines[i][j][0], lines[i][j][1]);
-                    }
-                    writer.WriteLine("  texture{ pigment{ color Black}");
-                    writer.WriteLine("    finish { reflection 0.05 phong 1}");
-                    writer.WriteLine("  }");
-                    writer.WriteLine("  no_shadow");
-                    writer.WriteLine("}");
-                }
+                IO_functions.POVray_environment_orthographic(writer);
+                IO_functions.POVray_streamlines(writer, lines);
             }
+
+            #endregion
         }
 
         private double[] Interpolate_2D_vector(double[][][] field, double x, double y)

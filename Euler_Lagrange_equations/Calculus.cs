@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Euler_Lagrange_equations
+namespace Class_library
 {
     public class Calculus
     {

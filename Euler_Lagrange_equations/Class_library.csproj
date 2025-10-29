@@ -41,9 +41,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analysis.cs" />
     <Compile Include="Calculus.cs" />
     <Compile Include="Inserts.cs" />
-    <Compile Include="Q_tensor.cs" />
+    <Compile Include="IO_functions.cs" />
+    <Compile Include="Environment.cs" />
+    <Compile Include="Next_step_calculations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

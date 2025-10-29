@@ -4,73 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Euler_Lagrange_equations
+namespace Class_library
 {
-    public class Q_tensor
+    public class Next_step_calculations : Environment
     {
-        public double dx, dy, dz;
 
-        /// <summary>
-        /// Izračuna trace od Q*Q
-        /// </summary>
-        /// <param name="q1"></param>
-        /// <param name="q2"></param>
-        /// <param name="q3"></param>
-        /// <param name="q4"></param>
-        /// <param name="q5"></param>
-        /// <returns></returns>
-        public static double Half_trQ_square(double q1, double q2, double q3, double q4, double q5)
-        {
-            double result = 3.0 * q1 * q1 + q2 * q2 + q3 * q3 + q4 * q4 + q5 * q5;
-            return result;
-        }
-
-        /// <summary>
-        /// Izračuna trace od Q*Q*Q
-        /// </summary>
-        /// <param name="q1"></param>
-        /// <param name="q2"></param>
-        /// <param name="q3"></param>
-        /// <param name="q4"></param>
-        /// <param name="q5"></param>
-        /// <returns></returns>
-        public static double TrQ_cubed(double q1, double q2, double q3, double q4, double q5)
-        {
-            double result = -3.0 * (2.0 * q1 * q1 * q1 - 2.0 * q3 * q4 * q5 + q2 * (q5 * q5 - q4 * q4) + q1 * (-2.0 * q2 * q2 - 2.0 * q3 * q3 + q4 * q4 + q5 * q5));
-            return result;
-        }
-
-        /// <summary>
-        /// Izračuna beta kvadrat za Q
-        /// </summary>
-        /// <param name="q1"></param>
-        /// <param name="q2"></param>
-        /// <param name="q3"></param>
-        /// <param name="q4"></param>
-        /// <param name="q5"></param>
-        /// <returns></returns>
-        public static double Beta(double q1, double q2, double q3, double q4, double q5)
-        {
-            double trQ2, trQ3, result;
-
-            trQ2 = 2.0 * Half_trQ_square(q1, q2, q3, q4, q5);
-            trQ3 = TrQ_cubed(q1, q2, q3, q4, q5);
-
-            if (trQ2 > 0.0)
-            {
-                result = 1 - (6.0 * trQ3 * trQ3) / (trQ2 * trQ2 * trQ2);
-            }
-            else
-            {
-                result = 0;
-            }
-
-            return result;
-        }
-    }
-
-    public class Next_step_t_independent : Q_tensor
-    {
         /// <summary>
         /// Izračuna naslednje stanje za Q1
         /// </summary>
@@ -145,9 +83,11 @@ namespace Euler_Lagrange_equations
             #endregion
 
             #region Izračun
+
             double dx = 0.01;
             double dy = 0.01;
             double dz = 0.01;
+
             #region Odvodi
 
             d_x = Calculus.D2(Q1[im][j][k], Q1[i][j][k], Q1[ip][j][k], dx);
@@ -176,8 +116,8 @@ namespace Euler_Lagrange_equations
             */
             #endregion
 
-            tr_Q2 = Half_trQ_square(q1, q2, q3, q4, q5);
-            
+            tr_Q2 = Analysis.Half_trQ_square(q1, q2, q3, q4, q5);
+
             EL_en = 0.0;
             dEL_en = 0.0;
 
@@ -198,15 +138,6 @@ namespace Euler_Lagrange_equations
 
             return result;
         }
-    }
-
-    public class Next_step_t_dependent : Q_tensor
-    {
-
-    }
-
-    public class Next_step_inequal_L : Q_tensor
-    {
 
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-namespace LC_order_reconstruction_3D
+namespace Class_library
 {
     public static class IO_functions
     {
@@ -333,8 +333,8 @@ namespace LC_order_reconstruction_3D
         /// <summary>
         /// Writes the POVray script for drawing the director field
         /// </summary>
-        /// <param name="datoteka">Input file</param>
         /// <param name="writer">Writing tool reference</param>
+        /// <param name="datoteka">Input file</param>
         /// <param name="factor">Display each factor point</param>
         /// <param name="N_r">Plane number</param>
         public static void POVray_director_field(StreamWriter writer, string[] datoteka, int factor, int N_r)
@@ -376,8 +376,8 @@ namespace LC_order_reconstruction_3D
         /// <summary>
         /// Writes the POVray script for drawing the director field
         /// </summary>
-        /// <param name="datoteka">Input file</param>
         /// <param name="writer">Writing tool reference</param>
+        /// <param name="datoteka">Input file</param>
         /// <param name="factor">Display each factor point</param>
         /// <param name="N_r">Plane number</param>
         /// <param name="plane_n">Plane (0-yz, 1-xz. 2-xy)</param>
@@ -435,8 +435,8 @@ namespace LC_order_reconstruction_3D
         /// <summary>
         /// Writes the POVray script for drawing the director field
         /// </summary>
-        /// <param name="datoteka">Input file</param>
         /// <param name="writer">Writing tool reference</param>
+        /// <param name="datoteka">Input file</param>
         /// <param name="zoom1">Zoomed in location in first direction</param>
         /// <param name="zoom2">Zoomed in location in second direction</param>
         /// <param name="N_r">Plane number</param>
@@ -489,6 +489,36 @@ namespace LC_order_reconstruction_3D
                     writer.WriteLine("}");
                     writer.WriteLine();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Writes the POVray script for drawing streamlines
+        /// </summary>
+        /// <param name="writer">>Writing tool reference</param>
+        /// <param name="lines">Input file</param>
+        public static void POVray_streamlines(StreamWriter writer, List<List<double[]>> lines)
+        {
+            for (int i = 0; i < lines.Count / 2; i++)
+            {
+                if (lines[i].Count < 50)
+                {
+                    continue;
+                }
+
+                writer.Write("sphere_sweep { cubic_spline ");
+                if (lines[i].Count % 10 == 0) { writer.Write(lines[i].Count / 10); }
+                else { writer.Write(lines[i].Count / 10 + 1); }
+                writer.WriteLine(", ");
+                for (int j = 0; j < lines[i].Count; j += 10)
+                {
+                    writer.WriteLine("  <{0:F3},{1:F3},0>, 0.2", lines[i][j][0], lines[i][j][1]);
+                }
+                writer.WriteLine("  texture{ pigment{ color Black}");
+                writer.WriteLine("    finish { reflection 0.05 phong 1}");
+                writer.WriteLine("  }");
+                writer.WriteLine("  no_shadow");
+                writer.WriteLine("}");
             }
         }
     }

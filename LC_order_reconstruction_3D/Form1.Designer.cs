@@ -3462,7 +3462,7 @@
             this.POVray_mode.Location = new System.Drawing.Point(8, 16);
             this.POVray_mode.Margin = new System.Windows.Forms.Padding(4);
             this.POVray_mode.Name = "POVray_mode";
-            this.POVray_mode.Size = new System.Drawing.Size(185, 33);
+            this.POVray_mode.Size = new System.Drawing.Size(220, 33);
             this.POVray_mode.TabIndex = 0;
             this.POVray_mode.Text = "Select mode";
             this.POVray_mode.SelectedIndexChanged += new System.EventHandler(this.POVray_mode_SelectedIndexChanged);
@@ -3554,13 +3554,13 @@
             this.POVray_plane.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.POVray_plane.FormattingEnabled = true;
             this.POVray_plane.Items.AddRange(new object[] {
-            "yz",
-            "xz",
-            "xy"});
-            this.POVray_plane.Location = new System.Drawing.Point(201, 16);
+            "yz (constant x)",
+            "xz (constant y)",
+            "xy (constant z)"});
+            this.POVray_plane.Location = new System.Drawing.Point(252, 16);
             this.POVray_plane.Margin = new System.Windows.Forms.Padding(4);
             this.POVray_plane.Name = "POVray_plane";
-            this.POVray_plane.Size = new System.Drawing.Size(138, 33);
+            this.POVray_plane.Size = new System.Drawing.Size(164, 33);
             this.POVray_plane.TabIndex = 126;
             this.POVray_plane.Text = "Select plane";
             // 
