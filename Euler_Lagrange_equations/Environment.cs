@@ -6,65 +6,93 @@ using System.Threading.Tasks;
 
 namespace Class_library
 {
-    public class Environment
+    public class Q_tensor
     {
-        public double dx, dy, dz, dxy, dxz, dyz, dxyz, eps, Rmi, Rma;
-        public double t, tt, a, AA, kor, w, sb, BB, B_f, Ex, Ey, Ez, E_max;
-        public double gamma, dt, k1, k2, k3, L1, L2, L3, L_chiral, deps, dmu;
-        public double[][][] Q1, Q2, Q3, Q4, Q5, Q1_n, Q2_n, Q3_n, Q4_n, Q5_n, b2, S;
+        private readonly int _Nx, _Ny, _Nz;
+        public double[][][] Q1, Q2, Q3, Q4, Q5, Q1_n, Q2_n, Q3_n, Q4_n, Q5_n;
         public double[][][] Q1_plate, Q2_plate, Q3_plate, Q4_plate, Q5_plate;
         public double[][][][] direktor, E, B;
         public int[][][] Q_type;
 
-        public void Initialize_Q(int Nx, int Ny, int Nz)
+        public int Nx { get { return this._Nx; } }
+        public int Ny { get { return this._Ny; } }
+        public int Nz { get { return this._Nz; } }
+
+        public Q_tensor(int Nx, int Ny, int Nz)
         {
-            this.Q1 = new double[Nx][][];
-            this.Q2 = new double[Nx][][];
-            this.Q3 = new double[Nx][][];
-            this.Q4 = new double[Nx][][];
-            this.Q5 = new double[Nx][][];
+            this._Nx = Nx;
+            this._Ny = Ny;
+            this._Nz = Nz;
 
-            this.Q1_n = new double[Nx][][];
-            this.Q2_n = new double[Nx][][];
-            this.Q3_n = new double[Nx][][];
-            this.Q4_n = new double[Nx][][];
-            this.Q5_n = new double[Nx][][];
+            #region Tensor field arrays
 
-            this.Q_type = new int[Nx][][];
+            this.Q1 = new double[_Nx][][];
+            this.Q2 = new double[_Nx][][];
+            this.Q3 = new double[_Nx][][];
+            this.Q4 = new double[_Nx][][];
+            this.Q5 = new double[_Nx][][];
 
-            for (int i = 0; i < Nx; i++)
+            this.Q1_n = new double[_Nx][][];
+            this.Q2_n = new double[_Nx][][];
+            this.Q3_n = new double[_Nx][][];
+            this.Q4_n = new double[_Nx][][];
+            this.Q5_n = new double[_Nx][][];
+
+            this.Q1_plate = new double[_Nx][][];
+            this.Q2_plate = new double[_Nx][][];
+            this.Q3_plate = new double[_Nx][][];
+            this.Q4_plate = new double[_Nx][][];
+            this.Q5_plate = new double[_Nx][][];
+
+            this.Q_type = new int[_Nx][][];
+
+            for (int i = 0; i < _Nx; i++)
             {
-                this.Q1[i] = new double[Ny][];
-                this.Q2[i] = new double[Ny][];
-                this.Q3[i] = new double[Ny][];
-                this.Q4[i] = new double[Ny][];
-                this.Q5[i] = new double[Ny][];
+                this.Q1[i] = new double[_Ny][];
+                this.Q2[i] = new double[_Ny][];
+                this.Q3[i] = new double[_Ny][];
+                this.Q4[i] = new double[_Ny][];
+                this.Q5[i] = new double[_Ny][];
 
-                this.Q1_n[i] = new double[Ny][];
-                this.Q2_n[i] = new double[Ny][];
-                this.Q3_n[i] = new double[Ny][];
-                this.Q4_n[i] = new double[Ny][];
-                this.Q5_n[i] = new double[Ny][];
+                this.Q1_n[i] = new double[_Ny][];
+                this.Q2_n[i] = new double[_Ny][];
+                this.Q3_n[i] = new double[_Ny][];
+                this.Q4_n[i] = new double[_Ny][];
+                this.Q5_n[i] = new double[_Ny][];
 
-                this.Q_type[i] = new int[Ny][];
+                this.Q1_plate[i] = new double[_Ny][];
+                this.Q2_plate[i] = new double[_Ny][];
+                this.Q3_plate[i] = new double[_Ny][];
+                this.Q4_plate[i] = new double[_Ny][];
+                this.Q5_plate[i] = new double[_Ny][];
 
-                for (int j = 0; j < Ny; j++)
+                this.Q_type[i] = new int[_Ny][];
+
+                for (int j = 0; j < _Ny; j++)
                 {
-                    this.Q1[i][j] = new double[Nz];
-                    this.Q2[i][j] = new double[Nz];
-                    this.Q3[i][j] = new double[Nz];
-                    this.Q4[i][j] = new double[Nz];
-                    this.Q5[i][j] = new double[Nz];
+                    this.Q1[i][j] = new double[_Nz];
+                    this.Q2[i][j] = new double[_Nz];
+                    this.Q3[i][j] = new double[_Nz];
+                    this.Q4[i][j] = new double[_Nz];
+                    this.Q5[i][j] = new double[_Nz];
 
-                    this.Q1_n[i][j] = new double[Nz];
-                    this.Q2_n[i][j] = new double[Nz];
-                    this.Q3_n[i][j] = new double[Nz];
-                    this.Q4_n[i][j] = new double[Nz];
-                    this.Q5_n[i][j] = new double[Nz];
+                    this.Q1_n[i][j] = new double[_Nz];
+                    this.Q2_n[i][j] = new double[_Nz];
+                    this.Q3_n[i][j] = new double[_Nz];
+                    this.Q4_n[i][j] = new double[_Nz];
+                    this.Q5_n[i][j] = new double[_Nz];
 
-                    this.Q_type[i][j] = new int[Nz];
+                    this.Q1_plate[i][j] = new double[_Nz];
+                    this.Q2_plate[i][j] = new double[_Nz];
+                    this.Q3_plate[i][j] = new double[_Nz];
+                    this.Q4_plate[i][j] = new double[_Nz];
+                    this.Q5_plate[i][j] = new double[_Nz];
+
+                    this.Q_type[i][j] = new int[_Nz];
                 }
             }
+
+            #endregion
         }
 
         public void Initialize_fields(int Nx, int Ny, int Nz)
@@ -95,6 +123,67 @@ namespace Class_library
             }
         }
 
+    }
+
+    public class Parameters
+    {
+        private readonly int _itmax;
+        private readonly double _eps, _kor, _Rmin, _Rmax, _a, _t, _w;
+        private readonly double _AA, _tt, _sb, _gamma, _delta_eps, _delta_mu;
+        private double _dx, _dy, _dz, _dxy, _dxz, _dyz, _dxyz;
+
+        public int itmax { get { return this._itmax; } }
+        public double eps { get { return this._eps; } }
+        public double kor { get { return this._kor; } }
+        public double Rmin { get { return this._Rmin; } }
+        public double Rmax { get { return this._Rmax; } }
+        public double a { get { return this._a; } }
+        public double t { get { return this._t; } }
+        public double w { get { return this._w; } }
+
+        public double AA { get { return this._AA; } }
+        public double tt { get { return this._tt; } }
+        public double sb { get { return this._sb; } }
+        public double gamma { get { return this._gamma; } }
+        public double delta_eps { get { return this._delta_eps; } }
+        public double delta_mu { get { return this._delta_mu; } }
+
+        public double dx { get { return this._dx; } }
+        public double dy { get { return this._dy; } }
+        public double dz { get { return this._dz; } }
+        public double dxy { get { return this._dxy; } }
+        public double dxz { get { return this._dxz; } }
+        public double dyz { get { return this._dyz; } }
+        public double dxyz { get { return this._dxyz; } }
+
+        public Parameters(int itmax, double eps, double kor, double Rmin, double Rmax, double a, double t, double w)
+        {
+            this._itmax = itmax;
+            this._eps = eps;
+            this._kor = kor;
+            this._Rmin = Rmin;
+            this._Rmax = Rmax;
+            this._a = a;
+            this._t = t;
+            this._w = w;
+
+            this._tt = 1.0 + Math.Sqrt(1.0 - t);
+            this._AA = this._a * this._a;
+            this._sb = this._tt;
+            this._gamma = 1.0;
+        }
+
+        public void Dimensions(int Nx, int Ny, int Nz)
+        {
+            this._dx = (this._Rmax - this._Rmin) / ((double)Nx - 1.0);
+            this._dy = (this._Rmax - this._Rmin) / ((double)Ny - 1.0);
+            this._dz = 1.0 / ((double)Nz - 1.0);
+
+            this._dxy = Math.Sqrt(this._dx * this._dx + this._dy * this._dy);
+            this._dxz = Math.Sqrt(this._dx * this._dx + this._dz * this._dz);
+            this._dyz = Math.Sqrt(this._dy * this._dy + this._dz * this._dz);
+            this._dxyz = Math.Sqrt(this._dx * this._dx + this._dy * this._dy + this._dz * this._dz);
+        }
     }
 
     public static class Environment_static
