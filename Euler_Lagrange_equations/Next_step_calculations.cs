@@ -8,57 +8,25 @@ namespace Class_library
 {
     interface INext_step_calculations
     {
-        /// <summary>
-        /// Izračuna naslednje stanje za Q1
-        /// </summary>
-        /// <param name="i">Lega v x</param>
-        /// <param name="j">Lega v y</param>
-        /// <param name="k">Lega v z</param>
-        /// <returns>Naslednje stanje</returns>
         double Next_value_Q1(int i, int j, int k);
+        double Next_value_Q2(int i, int j, int k);
+        double Next_value_Q3(int i, int j, int k);
+        double Next_value_Q4(int i, int j, int k);
+        double Next_value_Q5(int i, int j, int k);
     }
 
     public class Minimization : INext_step_calculations
     {
-        private Parameters _param;
         private Q_tensor _Q;
+        private Parameters _param;
 
         public Minimization(Q_tensor Q, Parameters param)
         {
-            _Q = Q;
-            _param = param;
+            this._Q = Q;
+            this._param = param;
         }
 
-        private void Q_values(Q_tensor Q, int i, int j, int k, out double q1, out double q2, out double q3, out double q4, out double q5)
-        {
-            q1 = Q.Q1[i][j][k];
-            q2 = Q.Q2[i][j][k];
-            q3 = Q.Q3[i][j][k];
-            q4 = Q.Q4[i][j][k];
-            q5 = Q.Q5[i][j][k];
-        }
-
-        private void E_B_values(Q_tensor Q, int i, int j, int k, out double[] E, out double[] B)
-        {
-            E = new double[3];
-            B = new double[3];
-
-            E[0] = Q.E[i][j][k][0];
-            E[1] = Q.E[i][j][k][1];
-            E[2] = Q.E[i][j][k][2];
-
-            B[0] = Q.B[i][j][k][0];
-            B[1] = Q.B[i][j][k][1];
-            B[2] = Q.B[i][j][k][2];
-        }
-
-        /// <summary>
-        /// Izračuna naslednje stanje za Q1
-        /// </summary>
-        /// <param name="i">Lega v x</param>
-        /// <param name="j">Lega v y</param>
-        /// <param name="k">Lega v z</param>
-        /// <returns>Naslednje stanje</returns>
+        
         public double Next_value_Q1(int i, int j, int k)
         {
             #region Inicializacija spremenljivk
@@ -67,8 +35,8 @@ namespace Class_library
             double d_x, d_y, d_z;
             double result = 0.0;
 
-            Q_values(_Q, i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
-            E_B_values(_Q, i, j, k, out double[] E, out double[] B);
+            _Q.Q_values(i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
+            _Q.E_B_values(i, j, k, out double[] E, out double[] B);
 
             Analysis.Periodic_conditions(_Q.Nx, i, out int im, out int ip);
             Analysis.Periodic_conditions(_Q.Ny, j, out int jm, out int jp);
@@ -110,8 +78,8 @@ namespace Class_library
             double d_x, d_y, d_z;
             double result = 0.0;
 
-            Q_values(_Q, i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
-            E_B_values(_Q, i, j, k, out double[] E, out double[] B);
+            _Q.Q_values(i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
+            _Q.E_B_values(i, j, k, out double[] E, out double[] B);
 
             Analysis.Periodic_conditions(_Q.Nx, i, out int im, out int ip);
             Analysis.Periodic_conditions(_Q.Ny, j, out int jm, out int jp);
@@ -154,8 +122,8 @@ namespace Class_library
             double d_x, d_y, d_z;
             double result = 0.0;
 
-            Q_values(_Q, i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
-            E_B_values(_Q, i, j, k, out double[] E, out double[] B);
+            _Q.Q_values(i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
+            _Q.E_B_values(i, j, k, out double[] E, out double[] B);
 
             Analysis.Periodic_conditions(_Q.Nx, i, out int im, out int ip);
             Analysis.Periodic_conditions(_Q.Ny, j, out int jm, out int jp);
@@ -197,8 +165,8 @@ namespace Class_library
             double d_x, d_y, d_z;
             double result = 0.0;
 
-            Q_values(_Q, i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
-            E_B_values(_Q, i, j, k, out double[] E, out double[] B);
+            _Q.Q_values(i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
+            _Q.E_B_values(i, j, k, out double[] E, out double[] B);
             
             Analysis.Periodic_conditions(_Q.Nx, i, out int im, out int ip);
             Analysis.Periodic_conditions(_Q.Ny, j, out int jm, out int jp);
@@ -240,8 +208,8 @@ namespace Class_library
             double d_x, d_y, d_z;
             double result = 0.0;
 
-            Q_values(_Q, i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
-            E_B_values(_Q, i, j, k, out double[] E, out double[] B);
+            _Q.Q_values(i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
+            _Q.E_B_values(i, j, k, out double[] E, out double[] B);
 
             Analysis.Periodic_conditions(_Q.Nx, i, out int im, out int ip);
             Analysis.Periodic_conditions(_Q.Ny, j, out int jm, out int jp);
@@ -260,7 +228,7 @@ namespace Class_library
             EL_en = 0.0;
             dEL_en = 0.0;
 
-            EL_en = -_param.t * q5 / 6.0 - q1 * q5 - q2 * q5 + q3 * q4 - (q5 * tr_Q2) / 2.0 + delta_eps * E[1] * E[2] / 2.0 + _param.delta_mu * B[1] * B[2] / 2.0;
+            EL_en = -_param.t * q5 / 6.0 - q1 * q5 - q2 * q5 + q3 * q4 - (q5 * tr_Q2) / 2.0 + _param.delta_eps * E[1] * E[2] / 2.0 + _param.delta_mu * B[1] * B[2] / 2.0;
             dEL_en = -_param.t / 6.0 - q1 - q2 - (tr_Q2 + 2.0 * q5 * q5) / 2.0;
 
             EL_en = d_x + d_y + d_z + EL_en * _param.AA;
@@ -275,5 +243,38 @@ namespace Class_library
             return result;
         }
 
+    }
+
+    public class Time_evolution : INext_step_calculations
+    {
+        private Q_tensor _Q;
+        private Parameters _param;
+
+        public Time_evolution(Q_tensor Q, Parameters param)
+        {
+            this._Q = Q;
+            this._param = param;
+        }
+
+        public double Next_value_Q1(int i, int j, int k)
+        {
+            return 0.0;
+        }
+        public double Next_value_Q2(int i, int j, int k)
+        {
+            return 0.0;
+        }
+        public double Next_value_Q3(int i, int j, int k)
+        {
+            return 0.0;
+        }
+        public double Next_value_Q4(int i, int j, int k)
+        {
+            return 0.0;
+        }
+        public double Next_value_Q5(int i, int j, int k)
+        {
+            return 0.0;
+        }
     }
 }

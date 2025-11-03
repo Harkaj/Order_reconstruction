@@ -123,6 +123,29 @@ namespace Class_library
             }
         }
 
+        public void Q_values(int i, int j, int k, out double q1, out double q2, out double q3, out double q4, out double q5)
+        {
+            q1 = this.Q1[i][j][k];
+            q2 = this.Q2[i][j][k];
+            q3 = this.Q3[i][j][k];
+            q4 = this.Q4[i][j][k];
+            q5 = this.Q5[i][j][k];
+        }
+
+        public void E_B_values(int i, int j, int k, out double[] E, out double[] B)
+        {
+            E = new double[3];
+            B = new double[3];
+
+            E[0] = this.E[i][j][k][0];
+            E[1] = this.E[i][j][k][1];
+            E[2] = this.E[i][j][k][2];
+
+            B[0] = this.B[i][j][k][0];
+            B[1] = this.B[i][j][k][1];
+            B[2] = this.B[i][j][k][2];
+        }
+
     }
 
     public class Parameters
