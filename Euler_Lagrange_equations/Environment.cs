@@ -8,8 +8,16 @@ namespace Class_library
 {
     public class Q_tensor
     {
+        public const int LC = 1,
+                         FROZEN = 2,
+                         I_PLANAR = 4,
+                         I_DEGENERATE = 8,
+                         I_HOMEOTROPIC = 16,
+                         B_FREE = 32,
+                         B_PERIODIC = 64;
+
         private readonly int _Nx, _Ny, _Nz;
-        public double[][][] Q1, Q2, Q3, Q4, Q5, Q1_n, Q2_n, Q3_n, Q4_n, Q5_n;
+        public double[][][] Q1, Q2, Q3, Q4, Q5;
         public double[][][] Q1_plate, Q2_plate, Q3_plate, Q4_plate, Q5_plate;
         public double[][][][] direktor, E, B;
         public int[][][] Q_type;
@@ -32,12 +40,6 @@ namespace Class_library
             this.Q4 = new double[_Nx][][];
             this.Q5 = new double[_Nx][][];
 
-            this.Q1_n = new double[_Nx][][];
-            this.Q2_n = new double[_Nx][][];
-            this.Q3_n = new double[_Nx][][];
-            this.Q4_n = new double[_Nx][][];
-            this.Q5_n = new double[_Nx][][];
-
             this.Q1_plate = new double[_Nx][][];
             this.Q2_plate = new double[_Nx][][];
             this.Q3_plate = new double[_Nx][][];
@@ -54,12 +56,6 @@ namespace Class_library
                 this.Q4[i] = new double[_Ny][];
                 this.Q5[i] = new double[_Ny][];
 
-                this.Q1_n[i] = new double[_Ny][];
-                this.Q2_n[i] = new double[_Ny][];
-                this.Q3_n[i] = new double[_Ny][];
-                this.Q4_n[i] = new double[_Ny][];
-                this.Q5_n[i] = new double[_Ny][];
-
                 this.Q1_plate[i] = new double[_Ny][];
                 this.Q2_plate[i] = new double[_Ny][];
                 this.Q3_plate[i] = new double[_Ny][];
@@ -75,12 +71,6 @@ namespace Class_library
                     this.Q3[i][j] = new double[_Nz];
                     this.Q4[i][j] = new double[_Nz];
                     this.Q5[i][j] = new double[_Nz];
-
-                    this.Q1_n[i][j] = new double[_Nz];
-                    this.Q2_n[i][j] = new double[_Nz];
-                    this.Q3_n[i][j] = new double[_Nz];
-                    this.Q4_n[i][j] = new double[_Nz];
-                    this.Q5_n[i][j] = new double[_Nz];
 
                     this.Q1_plate[i][j] = new double[_Nz];
                     this.Q2_plate[i][j] = new double[_Nz];
@@ -151,7 +141,7 @@ namespace Class_library
     public class Parameters
     {
         private readonly int _itmax;
-        private readonly double _eps, _kor, _Rmin, _Rmax, _a, _t, _w;
+        private readonly double _eps, _kor, _Rmin, _Rmax, _a, _t, _w, _dt;
         private readonly double _AA, _tt, _sb, _gamma, _delta_eps, _delta_mu;
         private double _dx, _dy, _dz, _dxy, _dxz, _dyz, _dxyz;
 
@@ -163,6 +153,7 @@ namespace Class_library
         public double a { get { return this._a; } }
         public double t { get { return this._t; } }
         public double w { get { return this._w; } }
+        public double dt { get { return this._dt; } }
 
         public double AA { get { return this._AA; } }
         public double tt { get { return this._tt; } }
