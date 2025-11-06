@@ -144,6 +144,7 @@ namespace Class_library
         private readonly double _eps, _kor, _Rmin, _Rmax, _a, _t, _w, _dt;
         private readonly double _AA, _tt, _sb, _gamma, _delta_eps, _delta_mu;
         private double _dx, _dy, _dz, _dxy, _dxz, _dyz, _dxyz;
+        private int _nap;
 
         public int itmax { get { return this._itmax; } }
         public double eps { get { return this._eps; } }
@@ -169,6 +170,7 @@ namespace Class_library
         public double dxz { get { return this._dxz; } }
         public double dyz { get { return this._dyz; } }
         public double dxyz { get { return this._dxyz; } }
+        public int nap { get { return this._nap; } set { this._nap = value; } }
 
         public Parameters(int itmax, double eps, double kor, double Rmin, double Rmax, double a, double t, double w)
         {
