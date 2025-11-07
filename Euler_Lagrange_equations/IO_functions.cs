@@ -9,6 +9,23 @@ namespace Class_library
 {
     public static class IO_functions
     {
+        public static void Parameters_output(Q_tensor Q, Parameters P)
+        {
+
+            using (StreamWriter writer = new StreamWriter("Parameters.md", false))
+            {
+                writer.WriteLine("Model used: Time independent");
+                writer.WriteLine();
+                writer.WriteLine("Nx: {0}  Ny: {1}  Nz: {2}", Q.Nx, Q.Ny, Q.Nz);
+                writer.WriteLine("a: {0}  Rmi: {1}  Rma: {2}", P.a, P.Rmin, P.Rmax);
+                writer.WriteLine("eps: {0}  kor: {1}  t: {2}", P.eps, P.kor, P.t);
+                writer.WriteLine("w: {0}  itmax: {1}", P.w, P.itmax);
+                writer.WriteLine("deps: {0}", P.delta_eps);
+                writer.WriteLine();
+
+            }
+        }
+
         /// <summary>
         /// Creates .pov and .ini files for creating multiple POVray scripts
         /// </summary>

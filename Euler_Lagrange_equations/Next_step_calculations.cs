@@ -210,11 +210,11 @@ namespace Class_library
 
         #endregion
 
-        #region Elastic terms
+        #region Elastic terms (Chiral terms to be added)
 
         public virtual double Elastic_term_Q1(int i, int j, int k, Q_tensor Q)
         {
-            double d_x, d_y, d_z;
+            double d_x, d_y, d_z;// q4dy, q5dx;
 
             Analysis.Periodic_conditions(Q.Nx, i, out int im, out int ip);
             Analysis.Periodic_conditions(Q.Ny, j, out int jm, out int jp);
@@ -224,7 +224,10 @@ namespace Class_library
             d_y = Calculus.D2(Q.Q1[i][jm][k], Q.Q1[i][j][k], Q.Q1[i][jp][k], _P.dy);
             d_z = Calculus.D2(Q.Q1[i][j][km], Q.Q1[i][j][k], Q.Q1[i][j][kp], _P.dz);
 
-            return d_x + d_y + d_z;
+            //q4dy = Calculus.D(Q.Q4[i][jm][k], Q.Q4[i][jp][k], _P.dy);
+            //q5dx = Calculus.D(Q.Q5[im][j][k], Q.Q5[ip][j][k], _P.dx);
+
+            return d_x + d_y + d_z;// + _P.L_chiral * (-q4dy + q5dx) / 4.0;
         }
         public virtual double Elastic_term_Q2(int i, int j, int k, Q_tensor Q)
         {
@@ -423,7 +426,82 @@ namespace Class_library
 
         public override double Elastic_term_Q1(int i, int j, int k, Q_tensor Q)
         {
-            return base.Elastic_term_Q1(i, j, k, Q);
+            Q.Q_values(i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
+            double l1, l2, l3_1, l3_2;
+            double q1dx, q1dy, q1dz, q2dx, q2dy, q3dx, q3dy, q4dx, q4dz, q5dy, q5dz;
+            double q1d2x, q1d2y, q1d2z, q2d2x, q2d2y, qd1, qd2, q1dxy, q1dxz, q1dyz, q3dxy, q4dxz, q5dyz;
+            
+            Analysis.Periodic_conditions(Q.Nx, i, out int im, out int ip);
+            Analysis.Periodic_conditions(Q.Ny, j, out int jm, out int jp);
+            Analysis.Periodic_conditions(Q.Nz, k, out int km, out int kp);
+
+            #region First order derivatives
+
+            q1dx = Calculus.D(Q.Q1[im][j][k], Q.Q1[ip][j][k], _P.dx);
+            q1dy = Calculus.D(Q.Q1[i][jm][k], Q.Q1[i][jp][k], _P.dy);
+            q1dz = Calculus.D(Q.Q1[i][j][km], Q.Q1[i][j][kp], _P.dz);
+
+            q2dx = Calculus.D(Q.Q2[im][j][k], Q.Q2[ip][j][k], _P.dx);
+            q2dy = Calculus.D(Q.Q2[i][jm][k], Q.Q2[i][jp][k], _P.dy);
+
+            q3dx = Calculus.D(Q.Q3[im][j][k], Q.Q3[ip][j][k], _P.dx);
+            q3dy = Calculus.D(Q.Q3[i][jm][k], Q.Q3[i][jp][k], _P.dy);
+
+            q4dx = Calculus.D(Q.Q4[im][j][k], Q.Q4[ip][j][k], _P.dx);
+            q4dz = Calculus.D(Q.Q4[i][jm][k], Q.Q4[i][jp][k], _P.dz);
+
+            q5dy = Calculus.D(Q.Q5[im][j][k], Q.Q5[ip][j][k], _P.dy);
+            q5dz = Calculus.D(Q.Q5[i][jm][k], Q.Q5[i][jp][k], _P.dz);
+
+            #endregion
+
+            #region Second order derivatives
+
+            q1d2x = Calculus.D2(Q.Q1[im][j][k], Q.Q1[i][j][k], Q.Q1[ip][j][k], _P.dx);
+            q1d2y = Calculus.D2(Q.Q1[i][jm][k], Q.Q1[i][j][k], Q.Q1[i][jp][k], _P.dy);
+            q1d2z = Calculus.D2(Q.Q1[i][j][km], Q.Q1[i][j][k], Q.Q1[i][j][kp], _P.dz);
+
+            q2d2x = Calculus.D2(Q.Q2[im][j][k], Q.Q2[i][j][k], Q.Q2[ip][j][k], _P.dx);
+            q2d2y = Calculus.D2(Q.Q2[i][jm][k], Q.Q2[i][j][k], Q.Q2[i][jp][k], _P.dy);
+
+            #endregion
+
+            #region Mixed second order derivatives
+
+            qd1 = Calculus.D(Q.Q1[im][jm][k], Q.Q1[ip][jm][k], _P.dx);
+            qd2 = Calculus.D(Q.Q1[im][jp][k], Q.Q1[ip][jp][k], _P.dx);
+            q1dxy = Calculus.D(qd1, qd2, _P.dy);
+
+            qd1 = Calculus.D(Q.Q1[im][j][km], Q.Q1[ip][j][km], _P.dx);
+            qd2 = Calculus.D(Q.Q1[im][j][kp], Q.Q1[ip][j][kp], _P.dx);
+            q1dxz = Calculus.D(qd1, qd2, _P.dz);
+
+            qd1 = Calculus.D(Q.Q1[i][jm][km], Q.Q1[i][jp][km], _P.dy);
+            qd2 = Calculus.D(Q.Q1[i][jm][kp], Q.Q1[i][jp][kp], _P.dy);
+            q1dyz = Calculus.D(qd1, qd2, _P.dz);
+
+            qd1 = Calculus.D(Q.Q3[im][jm][k], Q.Q3[ip][jm][k], _P.dx);
+            qd2 = Calculus.D(Q.Q3[im][jp][k], Q.Q3[ip][jp][k], _P.dx);
+            q3dxy = Calculus.D(qd1, qd2, _P.dy);
+
+            qd1 = Calculus.D(Q.Q4[im][j][km], Q.Q4[ip][j][km], _P.dx);
+            qd2 = Calculus.D(Q.Q4[im][j][kp], Q.Q4[ip][j][kp], _P.dx);
+            q4dxz = Calculus.D(qd1, qd2, _P.dz);
+
+            qd1 = Calculus.D(Q.Q5[i][jm][km], Q.Q5[i][jp][km], _P.dy);
+            qd2 = Calculus.D(Q.Q5[i][jm][kp], Q.Q5[i][jp][kp], _P.dy);
+            q5dyz = Calculus.D(qd1, qd2, _P.dz);
+
+            #endregion
+
+            l1 = q1d2x + q1d2y + q1d2z;
+            l2 = q1d2x + q1d2y + 4.0 * q1d2z + q2d2x - q2d2y + 2.0 * q3dxy - q4dxz - q5dyz;
+            l3_1 = 2.0 * q1dz * q1dz - q5dz * q1dy - q1dy * q1dy + q1dy * q2dy - 2.0 * q5 * q1dz + q2 * q1d2y - q4dz * q1dx - q3dy * q1dx - q1dx * q1dx;
+            l3_2 = -q1dx * q2dx - q1dy * q3dx - q1dz * (q5dy + q4dx) - 2.0 * q4 * q1dxz - 2.0 * q3 * q1dxy + q1 * (2.0 * q1d2z - q1d2y - q1d2x) - q2 * q1d2x;
+            //l3_1 = q1 * (q1d2x + q1d2y - 4.0 * q1d2z) + q2 * (q1d2x + q1d2y) + 2.0 * q3 * q1dxy + 2.0 * q4 * q1dxz + 2.0 * q5 * q1dyz;
+            //  l3_2 = q1dx * q1dx + q1dy * q1dy - 2.0 * q1dz * q1dz + q1dx * q2dx - q1dy * q2dy + q1dx * q3dy + q1dy * q3dx + q1dx * q4dz + q1dz * q4dx + q1dy * q5dz + q1dz * q5dy;
+
+            return _P.L1 * l1 + _P.L2 * l2 / 6.0 + _P.L3 * (l3_1 + l3_2);
         }
         public override double Elastic_term_Q2(int i, int j, int k, Q_tensor Q)
         {

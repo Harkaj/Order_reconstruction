@@ -141,17 +141,17 @@ namespace Class_library
     public class Parameters
     {
         private readonly int _itmax;
-        private readonly double _eps, _kor, _Rmin, _Rmax, _a, _t, _w, _dt;
+        private readonly double _eps, _kor, _R_min, _R_max, _a, _t, _w, _dt;
         private readonly double _AA, _tt, _sb, _gamma, _delta_eps, _delta_mu;
-        private readonly double _L1, _L2, _L3;
+        private readonly double _L1, _L2, _L3, _L_chiral;
         private double _dx, _dy, _dz, _dxy, _dxz, _dyz, _dxyz;
         private int _nap;
 
         public int itmax { get { return this._itmax; } }
         public double eps { get { return this._eps; } }
         public double kor { get { return this._kor; } }
-        public double Rmin { get { return this._Rmin; } }
-        public double Rmax { get { return this._Rmax; } }
+        public double Rmin { get { return this._R_min; } }
+        public double Rmax { get { return this._R_max; } }
         public double a { get { return this._a; } }
         public double t { get { return this._t; } }
         public double w { get { return this._w; } }
@@ -167,6 +167,7 @@ namespace Class_library
         public double L1 { get { return this._L1; } }
         public double L2 { get { return this._L2; } }
         public double L3 { get { return this._L3; } }
+        public double L_chiral { get { return this._L_chiral; } }
 
         public double dx { get { return this._dx; } }
         public double dy { get { return this._dy; } }
@@ -177,16 +178,17 @@ namespace Class_library
         public double dxyz { get { return this._dxyz; } }
         public int nap { get { return this._nap; } set { this._nap = value; } }
 
-        public Parameters(int itmax, double eps, double kor, double Rmin, double Rmax, double a, double t, double w)
+        public Parameters(int itmax, double eps, double kor, double Rmin, double Rmax, double a, double t, double w, double dt)
         {
             this._itmax = itmax;
             this._eps = eps;
             this._kor = kor;
-            this._Rmin = Rmin;
-            this._Rmax = Rmax;
+            this._R_min = Rmin;
+            this._R_max = Rmax;
             this._a = a;
             this._t = t;
             this._w = w;
+            this._dt = dt;
 
             this._tt = 1.0 + Math.Sqrt(1.0 - t);
             this._AA = this._a * this._a;
@@ -196,8 +198,8 @@ namespace Class_library
 
         public void Dimensions(int Nx, int Ny, int Nz)
         {
-            this._dx = (this._Rmax - this._Rmin) / ((double)Nx - 1.0);
-            this._dy = (this._Rmax - this._Rmin) / ((double)Ny - 1.0);
+            this._dx = (this._R_max - this._R_min) / ((double)Nx - 1.0);
+            this._dy = (this._R_max - this._R_min) / ((double)Ny - 1.0);
             this._dz = 1.0 / ((double)Nz - 1.0);
 
             this._dxy = Math.Sqrt(this._dx * this._dx + this._dy * this._dy);
