@@ -143,6 +143,7 @@ namespace Class_library
         private readonly int _itmax;
         private readonly double _eps, _kor, _Rmin, _Rmax, _a, _t, _w, _dt;
         private readonly double _AA, _tt, _sb, _gamma, _delta_eps, _delta_mu;
+        private readonly double _L1, _L2, _L3;
         private double _dx, _dy, _dz, _dxy, _dxz, _dyz, _dxyz;
         private int _nap;
 
@@ -162,6 +163,10 @@ namespace Class_library
         public double gamma { get { return this._gamma; } }
         public double delta_eps { get { return this._delta_eps; } }
         public double delta_mu { get { return this._delta_mu; } }
+
+        public double L1 { get { return this._L1; } }
+        public double L2 { get { return this._L2; } }
+        public double L3 { get { return this._L3; } }
 
         public double dx { get { return this._dx; } }
         public double dy { get { return this._dy; } }
