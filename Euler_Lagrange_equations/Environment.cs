@@ -16,10 +16,14 @@ namespace Class_library
                          B_FREE = 32,
                          B_PERIODIC = 64;
 
+        private Random r = new Random();
         private readonly int _Nx, _Ny, _Nz;
+        private double phi0_upper, phi0_lower, phi0_bulk;
+        private bool Q_is_zero = false;
+
         public double[][][] Q1, Q2, Q3, Q4, Q5;
-        public double[][][] Q1_plate, Q2_plate, Q3_plate, Q4_plate, Q5_plate;
-        public double[][][][] direktor, E, B;
+        public double[][][][] surface_normal, E, B;
+        public double[][] defects_up, defects_down;
         public int[][][] Q_type;
 
         public int Nx { get { return this._Nx; } }
@@ -40,13 +44,8 @@ namespace Class_library
             this.Q4 = new double[_Nx][][];
             this.Q5 = new double[_Nx][][];
 
-            this.Q1_plate = new double[_Nx][][];
-            this.Q2_plate = new double[_Nx][][];
-            this.Q3_plate = new double[_Nx][][];
-            this.Q4_plate = new double[_Nx][][];
-            this.Q5_plate = new double[_Nx][][];
-
             this.Q_type = new int[_Nx][][];
+            this.surface_normal = new double[_Nx][][][];
 
             for (int i = 0; i < _Nx; i++)
             {
@@ -56,13 +55,8 @@ namespace Class_library
                 this.Q4[i] = new double[_Ny][];
                 this.Q5[i] = new double[_Ny][];
 
-                this.Q1_plate[i] = new double[_Ny][];
-                this.Q2_plate[i] = new double[_Ny][];
-                this.Q3_plate[i] = new double[_Ny][];
-                this.Q4_plate[i] = new double[_Ny][];
-                this.Q5_plate[i] = new double[_Ny][];
-
                 this.Q_type[i] = new int[_Ny][];
+                this.surface_normal[i] = new double[_Ny][][];
 
                 for (int j = 0; j < _Ny; j++)
                 {
@@ -72,44 +66,440 @@ namespace Class_library
                     this.Q4[i][j] = new double[_Nz];
                     this.Q5[i][j] = new double[_Nz];
 
-                    this.Q1_plate[i][j] = new double[_Nz];
-                    this.Q2_plate[i][j] = new double[_Nz];
-                    this.Q3_plate[i][j] = new double[_Nz];
-                    this.Q4_plate[i][j] = new double[_Nz];
-                    this.Q5_plate[i][j] = new double[_Nz];
-
                     this.Q_type[i][j] = new int[_Nz];
+                    this.surface_normal[i][j] = new double[_Nz][];
+
+                    for (int k = 0; k < _Nz; k++)
+                    {
+                        this.surface_normal[i][i][k] = new double[3];
+                    }
                 }
             }
 
             #endregion
         }
 
-        public void Initialize_fields(int Nx, int Ny, int Nz)
+        public void Initialize_fields()
         {
-            this.direktor = new double[Nx][][][];
-            this.E = new double[Nx][][][];
-            this.B = new double[Nx][][][];
+            this.E = new double[_Nx][][][];
+            this.B = new double[_Nx][][][];
 
-            for (int i = 0; i < Nx; i++)
+            for (int i = 0; i < _Nx; i++)
             {
-                this.direktor[i] = new double[Ny][][];
-                this.E[i] = new double[Ny][][];
-                this.B[i] = new double[Ny][][];
+                this.E[i] = new double[_Ny][][];
+                this.B[i] = new double[_Ny][][];
                 
-                for (int j = 0; j < Ny; j++)
+                for (int j = 0; j < _Ny; j++)
                 {
-                    this.direktor[i][j] = new double[Nz][];
-                    this.E[i][j] = new double[Nz][];
-                    this.B[i][j] = new double[Nz][];
+                    this.E[i][j] = new double[_Nz][];
+                    this.B[i][j] = new double[_Nz][];
 
-                    for (int k = 0; k < Nz; k++)
+                    for (int k = 0; k < _Nz; k++)
                     {
-                        this.direktor[i][j][k] = new double[3];
                         this.E[i][j][k] = new double[3];
                         this.B[i][j][k] = new double[3];
                     }
                 }
+            }
+        }
+
+        public void Q_state_setup(bool topbottom_boundary, string upper, string lower, string sides)
+        {
+            lower = lower.ToUpper();
+            upper = upper.ToUpper();
+            sides = sides.ToUpper();
+
+            for (int i = 0; i < this.Nx; i++)
+            {
+                for (int j = 0; j < this.Ny; j++)
+                {
+                    for (int k = 0; k < this.Nz; k++)
+                    {
+                        #region Top and bottom boundary
+
+                        if (topbottom_boundary && k == 0)
+                        {
+                            switch (lower)
+                            {
+                                case "PLANAR PATTERNED":
+                                case "PLANAR":
+                                    Q_type[i][j][k] = I_PLANAR;
+                                    break;
+                                case "DEGENERATE":
+                                    Q_type[i][j][k] = I_DEGENERATE;
+                                    break;
+                                case "HOMEOTROPIC":
+                                    Q_type[i][j][k] = I_HOMEOTROPIC;
+                                    break;
+                                default:
+                                    Q_type[i][j][k] = I_PLANAR;
+                                    break;
+                            }
+                            continue;
+                        }
+                        if (topbottom_boundary && k == this._Nz - 1)
+                        {
+                            switch (upper)
+                            {
+                                case "PLANAR PATTERNED":
+                                case "PLANAR":
+                                    Q_type[i][j][k] = I_PLANAR;
+                                    break;
+                                case "DEGENERATE":
+                                    Q_type[i][j][k] = I_DEGENERATE;
+                                    break;
+                                case "HOMEOTROPIC":
+                                    Q_type[i][j][k] = I_HOMEOTROPIC;
+                                    break;
+                                default:
+                                    Q_type[i][j][k] = I_PLANAR;
+                                    break;
+                            }
+                            continue;
+                        }
+
+                        #endregion
+
+                        #region All sides
+
+                        if (i == 0 || i == this._Nx - 1 || 
+                            j == 0 || j == this._Ny - 1 || 
+                            k == 0 || k == this._Nz - 1)
+                        {
+                            switch (sides)
+                            {
+                                case "FREE":
+                                    Q_type[i][j][k] = B_FREE;
+                                    break;
+                                case "PERIODIC":
+                                    Q_type[i][j][k] = B_PERIODIC;
+                                    break;
+                                default:
+                                    Q_type[i][j][k] = B_FREE;
+                                    break;
+                            }
+                            continue;
+                        }
+
+                        #endregion
+
+                        Q_type[i][j][k] = LC;
+                    }
+                }
+            }
+        }
+
+        public void Q_state_cleanup()
+        {
+            for (int i = 0; i < this.Nx; i++)
+            {
+                for (int j = 0; j < this.Ny; j++)
+                {
+                    for (int k = 0; k < this.Nz; k++)
+                    {
+                        if (Q_type[i][j][k] == LC) { continue; }
+                        Analysis.Periodic_conditions(this._Nx, i, out int im, out int ip);
+                        Analysis.Periodic_conditions(this._Ny, i, out int jm, out int jp);
+                        Analysis.Periodic_conditions(this._Nz, i, out int km, out int kp);
+                        if (Q_type[im][j][k] != LC && Q_type[ip][j][k] != LC && 
+                            Q_type[i][jm][k] != LC && Q_type[i][jp][k] != LC &&
+                            Q_type[i][j][km] != LC && Q_type[i][j][kp] != LC)
+                        {
+                            Q_type[i][j][k] = FROZEN;
+                        }
+                    }
+                }
+            }
+        }
+
+        public void Insert_setup(string type, int size1, int size2, int c_x, int c_y, int c_z)
+        {
+            double R1, R2;
+            type = type.ToUpper();
+            switch (type)
+            {
+                case "POINT":
+                    Q_type[c_x][c_y][c_z] = FROZEN;
+                    break;
+                case "SPHERE MELTED":
+                    for (int i = c_x - size1; i < c_x + size1; i++)
+                    {
+                        for (int j = c_y - size1; j < c_y + size1; j++)
+                        {
+                            for (int k = c_z - size1; k < c_z + size1; k++)
+                            {
+                                R1 = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y) + (k - c_z) * (k - c_z);
+                                if (R1 <= size1 * size1) { Q_type[i][j][k] = FROZEN; }
+                            }
+                        }
+                    }
+                    break;
+                case "SPHERE HOMEOTROPIC":
+                    for (int i = c_x - size1; i < c_x + size1; i++)
+                    {
+                        for (int j = c_y - size1; j < c_y + size1; j++)
+                        {
+                            for (int k = c_z - size1; k < c_z + size1; k++)
+                            {
+                                R1 = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y) + (k - c_z) * (k - c_z);
+                                if (R1 <= size1 * size1) { Q_type[i][j][k] = I_HOMEOTROPIC; }
+                            }
+                        }
+                    }
+                    break;
+                case "SPHERE PLANAR":
+                    for (int i = c_x - size1; i < c_x + size1; i++)
+                    {
+                        for (int j = c_y - size1; j < c_y + size1; j++)
+                        {
+                            for (int k = c_z - size1; k < c_z + size1; k++)
+                            {
+                                R1 = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y) + (k - c_z) * (k - c_z);
+                                if (R1 <= size1 * size1) { Q_type[i][j][k] = I_DEGENERATE; }
+                            }
+                        }
+                    }
+                    break;
+                case "TORUS HOMEOTROPIC":
+                    for (int i = c_x - size1 - size2; i < c_x + size1 + size2; i++)
+                    {
+                        for (int j = c_y - size1 - size2; j < c_y + size1 + size2; j++)
+                        {
+                            for (int k = c_z - size2; k < c_z + size2; k++)
+                            {
+                                R1 = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y);
+                                R1 = Math.Sqrt(R1);
+                                R2 = (R1 - size1) * (R1 - size1) + (k - c_z) * (k - c_z);
+                                if (R2 <= size2 * size2) { Q_type[i][j][k] = I_HOMEOTROPIC; }
+                            }
+                        }
+                    }
+                    break;
+                case "TORUS PLANAR":
+                    for (int i = c_x - size1 - size2; i < c_x + size1 + size2; i++)
+                    {
+                        for (int j = c_y - size1 - size2; j < c_y + size1 + size2; j++)
+                        {
+                            for (int k = c_z - size2; k < c_z + size2; k++)
+                            {
+                                R1 = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y);
+                                R1 = Math.Sqrt(R1);
+                                R2 = (R1 - size1) * (R1 - size1) + (k - c_z) * (k - c_z);
+                                if (R2 <= size2 * size2) { Q_type[i][j][k] = I_PLANAR; }
+                            }
+                        }
+                    }
+                    break;
+                case "CYLINDER":
+                    for (int i = c_x - size1; i < c_x + size1; i++)
+                    {
+                        for (int j = c_y - size1; j < c_y + size1; j++)
+                        {
+                            for (int k = 0; k < this._Nz; k++)
+                            {
+                                R1 = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y);
+                                if (R1 <= size1 * size1) { Q_type[i][j][k] = FROZEN; }
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    Q_type[c_x][c_y][c_z] = FROZEN;
+                    break;
+            }
+        }
+
+        public void Initialize_field_values(string upper, string lower, string bulk, double tt)
+        {
+            double theta = 0.0, phi = 0.0;
+
+            for (int i = 0; i < this.Nx; i++)
+            {
+                for (int j = 0; j < this.Ny; j++)
+                {
+                    for (int k = 0; k < this.Nz; k++)
+                    {
+                        Q_is_zero = false;
+
+                        #region Setting theta and phi
+
+                        switch (this.Q_type[i][j][k])
+                        {
+                            case LC:
+                                Q_bulk(bulk, i, j, k, out theta, out phi);
+                                break;
+                            case FROZEN:
+                                Q_is_zero = true;
+                                break;
+                            case I_PLANAR:
+                            case I_DEGENERATE:
+                            case I_HOMEOTROPIC:
+                                if (k == 0) { Q_boundary_topbottom(lower, i, j, k, defects_down, phi0_lower, out theta, out phi); }
+                                if (k == this._Nz - 1) { Q_boundary_topbottom(upper, i, j, k, defects_up, phi0_upper, out theta, out phi); }
+                                else { theta = 0.0; phi = 0.0; }
+                                break;
+                            case B_FREE:
+                            case B_PERIODIC:
+                            default:
+                                Q_bulk(bulk, i, j, k, out theta, out phi);
+                                break;
+                        }
+
+                        #endregion
+
+                        #region Isotropic or frozen state 
+
+                        if (Q_is_zero)
+                        {
+                            Q1[i][j][k] = 0.0;
+                            Q2[i][j][k] = 0.0;
+                            Q3[i][j][k] = 0.0;
+                            Q4[i][j][k] = 0.0;
+                            Q5[i][j][k] = 0.0;
+
+                            continue;
+                        }
+
+                        #endregion
+
+                        #region Assigning Q values
+
+                        Q1[i][j][k] = tt * (1.0 / 6.0 - (Math.Cos(theta) * Math.Cos(theta)) / 2.0);
+                        Q2[i][j][k] = tt * (Math.Sin(theta) * Math.Sin(theta) * Math.Cos(2.0 * phi)) / 2.0;
+                        Q3[i][j][k] = tt * (Math.Sin(theta) * Math.Sin(theta) * Math.Sin(2.0 * phi)) / 2.0;
+                        Q4[i][j][k] = tt * (Math.Sin(2.0 * theta) * Math.Cos(phi)) / 2.0;
+                        Q5[i][j][k] = tt * (Math.Sin(2.0 * theta) * Math.Sin(phi)) / 2.0;
+
+                        #endregion
+
+                    }
+                }
+            }
+        }
+
+        private void Q_bulk(string bulk, int i, int j, int k, out double theta, out double phi)
+        {
+            double directorx, directory, directorz, RR;
+            bulk = bulk.ToUpper();
+            switch (bulk)
+            {
+                case "ISOTROPIC":
+                    Q_is_zero = true;
+                    theta = 0.0;
+                    phi = 0.0;
+                    break;
+                case "PLANAR":
+                    theta = Math.PI / 2.0;
+                    phi = phi0_bulk;
+                    break;
+                case "HOMEOTROPIC":
+                    theta = 0.0;
+                    phi = 0.0;
+                    break;
+                case "ESCAPED":
+                    phi = Math.Atan2(j - Ny / 2, i - Nx / 2) + phi0_bulk;// + 0.1 * (0.5 - r.NextDouble());
+                    theta = 2.0 * Math.Atan(Math.Sqrt((i - Nx / 2) * (i - Nx / 2) + (j - Ny / 2) * (j - Ny / 2)) / (Nx / 2));
+
+                    if (Math.Abs(theta) > (Math.PI / 2.0))
+                    {
+                        theta = Math.PI / 2.0;
+                    }
+                    break;
+                case "BOUNDARY DEFECT":
+                    theta = Math.PI / 2.0;
+                    phi = phi0_lower;
+
+                    for (int d = 0; d < this.defects_down.Length; d++)
+                    {
+                        phi += this.defects_down[d][2] * Math.Atan2(j - this.defects_down[d][1], i - this.defects_down[d][0]);
+                    }
+                    break;
+                case "TWIST":
+                    theta = Math.PI * k / Nz;
+                    phi = -0.5 * Math.Atan2(j - this.defects_down[0][1], i - this.defects_down[0][0]);
+
+                    directorx = Math.Cos(phi);
+                    directory = Math.Sin(phi) * Math.Cos(theta);
+                    directorz = Math.Sin(phi) * Math.Sin(theta);
+
+                    theta = Math.Acos(directorz);
+                    phi = Math.Atan2(directory, directorx);
+                    break;
+                case "DOUBLE TWIST":
+                    theta = Math.PI / 2.0;
+                    for (int d = 0; d < this.defects_down.Length; d++)
+                    {
+                        RR = Math.Sqrt((i - this.defects_down[d][0]) * (i - this.defects_down[d][0]) + (j - this.defects_down[d][1]) * (j - this.defects_down[d][1]));
+
+                        if (RR < 50.0)
+                        {
+                            theta = 2.0 * Math.Atan(RR / 50.0);
+                        }
+                    }
+
+                    phi = Math.PI / 2.0;
+                    for (int d = 0; d < this.defects_down.Length; d++)
+                    {
+                        phi += this.defects_down[d][2] * Math.Atan2(j - this.defects_down[d][1], i - this.defects_down[d][0]);
+                    }
+                    break;
+                default: //Other
+                    theta = Math.PI * k / Nz;
+                    phi = 0.0;
+
+                    double rad1 = Math.Sqrt((i - 60 - Nx / 2) * (i - 60 - Nx / 2) + (j - Ny / 2) * (j - Ny / 2));
+                    double rad2 = Math.Sqrt((i + 95 - Nx / 2) * (i + 95 - Nx / 2) + (j - Ny / 2) * (j - Ny / 2));
+                    double h_factor = Math.Abs((double)k - (double)Nz / 2.0) / ((double)Nz / 2.0);
+
+                    if (i > 10 && i < Nx - 10 && j > 10 && j < Ny - 10)//(rad < R_0 && k > 5 && k < Nz - 5)
+                    {
+                        theta = theta / (1.0 - h_factor) - Math.Atan2(rad1, k - Nz / 2) - Math.Atan2(rad2, k - Nz / 2) / (h_factor);
+                        phi = (Math.Atan2(j - Ny / 2, i - 60 - Nx / 2) - Math.Atan2(j - Ny / 2, i + 95 - Nx / 2)) / (h_factor);
+                    }
+                    break;
+            }
+        }
+
+        private void Q_boundary_topbottom(string boundary, int i, int j, int k, double[][] defects, double phi0, out double theta, out double phi)
+        {
+            double R_ij;
+            boundary = boundary.ToUpper();
+            switch (boundary)
+            {
+                case "PLANAR PATTERNED":  //Defect pattern
+                    theta = Math.PI / 2.0;
+                    phi = phi0;
+                    for (int d = 0; d < defects.Length; d++)
+                    {
+                        phi += defects[d][2] * Math.Atan2(j - defects[d][1], i - defects[d][0]);
+                    }
+                    break;
+                case "PLANAR":
+                    theta = Math.PI / 2.0;
+                    phi = phi0;
+                    break;
+                case "DEGENERATE":
+                    theta = Math.PI / 2.0;
+                    phi = Math.PI * r.NextDouble();
+                    break;
+                case "HOMEOTROPIC":
+                    theta = 0.0;
+                    phi = 0.0;
+                    break;
+                default:  //Other
+                    theta = Math.PI / 2.0;
+                    R_ij = (i - this._Nx / 2) * (i - this._Nx / 2) + (j - this._Ny / 2) * (j - this._Ny / 2);
+                    R_ij = Math.Sqrt(R_ij);
+                    if (Math.Abs(R_ij) > 30.0 && Math.Abs(R_ij) <= 60.0)
+                    {
+                        phi = phi0 + (R_ij - 45.0) * Math.PI / 30;
+                    }
+                    else if (Math.Abs(R_ij) > 60.0 && Math.Abs(R_ij) <= 90.0)
+                    {
+                        phi = phi0 - (R_ij - 75.0) * Math.PI / 30;
+                    }
+                    else { phi = phi0 + Math.PI / 2.0; }
+                    break;
             }
         }
 

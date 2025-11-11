@@ -28,7 +28,7 @@ namespace Class_library
                 {
                     for (int k = 0; k < Q.Nz; k++)
                     {
-                        if (Q.Q_type[i][j][k] != Q_tensor.LC) { continue; }
+                        if (Q.Q_type[i][j][k] != Q_tensor.LC && Q.Q_type[i][j][k] != Q_tensor.B_PERIODIC) { continue; }
                         Q_n.Q1[i][j][k] = Next_value_Q1(i, j, k, Q);
                     }
                 }
@@ -42,7 +42,7 @@ namespace Class_library
                 {
                     for (int k = 0; k < Q.Nz; k++)
                     {
-                        if (Q.Q_type[i][j][k] != Q_tensor.LC) { continue; }
+                        if (Q.Q_type[i][j][k] != Q_tensor.LC && Q.Q_type[i][j][k] != Q_tensor.B_PERIODIC) { continue; }
                         Q_n.Q2[i][j][k] = Next_value_Q2(i, j, k, Q);
                     }
                 }
@@ -56,7 +56,7 @@ namespace Class_library
                 {
                     for (int k = 0; k < Q.Nz; k++)
                     {
-                        if (Q.Q_type[i][j][k] != Q_tensor.LC) { continue; }
+                        if (Q.Q_type[i][j][k] != Q_tensor.LC && Q.Q_type[i][j][k] != Q_tensor.B_PERIODIC) { continue; }
                         Q_n.Q3[i][j][k] = Next_value_Q3(i, j, k, Q);
                     }
                 }
@@ -70,7 +70,7 @@ namespace Class_library
                 {
                     for (int k = 0; k < Q.Nz; k++)
                     {
-                        if (Q.Q_type[i][j][k] != Q_tensor.LC) { continue; }
+                        if (Q.Q_type[i][j][k] != Q_tensor.LC && Q.Q_type[i][j][k] != Q_tensor.B_PERIODIC) { continue; }
                         Q_n.Q4[i][j][k] = Next_value_Q4(i, j, k, Q);
                     }
                 }
@@ -84,7 +84,7 @@ namespace Class_library
                 {
                     for (int k = 0; k < Q.Nz; k++)
                     {
-                        if (Q.Q_type[i][j][k] != Q_tensor.LC) { continue; }
+                        if (Q.Q_type[i][j][k] != Q_tensor.LC && Q.Q_type[i][j][k] != Q_tensor.B_PERIODIC) { continue; }
                         Q_n.Q5[i][j][k] = Next_value_Q5(i, j, k, Q);
                     }
                 }

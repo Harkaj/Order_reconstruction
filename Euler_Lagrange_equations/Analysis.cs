@@ -8,7 +8,6 @@ namespace Class_library
 {
     public class Analysis
     {
-
         public static void Periodic_conditions(int N, int i, out int im, out int ip)
         {
             im = i - 1;
