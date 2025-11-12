@@ -11,16 +11,18 @@ namespace Class_library
     {
         public static void Parameters_output(Q_tensor Q, Parameters P)
         {
-
             using (StreamWriter writer = new StreamWriter("Parameters.md", false))
             {
-                writer.WriteLine("Model used: Time independent");
-                writer.WriteLine();
-                writer.WriteLine("Nx: {0}  Ny: {1}  Nz: {2}", Q.Nx, Q.Ny, Q.Nz);
-                writer.WriteLine("a: {0}  Rmi: {1}  Rma: {2}", P.a, P.Rmin, P.Rmax);
-                writer.WriteLine("eps: {0}  kor: {1}  t: {2}", P.eps, P.kor, P.t);
-                writer.WriteLine("w: {0}  itmax: {1}", P.w, P.itmax);
+                writer.WriteLine("model: Time independent");
+                writer.WriteLine("Nx: {0}", Q.Nx);
+                writer.WriteLine("Ny: {0}", Q.Ny);
+                writer.WriteLine("Nz: {0}", Q.Nz);
+                writer.WriteLine("a: {0}", P.a);
+                writer.WriteLine("t: {0}", P.t);
+                writer.WriteLine("w: {0}", P.w);
+                writer.WriteLine("itmax: {0}", P.itmax);
                 writer.WriteLine("deps: {0}", P.delta_eps);
+                writer.WriteLine("dmu: {0}", P.delta_mu);
                 writer.WriteLine();
 
             }

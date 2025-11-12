@@ -18,8 +18,7 @@ namespace Class_library
 
         private Random r = new Random();
         private readonly int _Nx, _Ny, _Nz;
-        private double phi0_upper, phi0_lower, phi0_bulk;
-        private bool Q_is_zero = false;
+        private double _phi0_upper, _phi0_lower, _phi0_bulk;
 
         public double[][][] Q1, Q2, Q3, Q4, Q5;
         public double[][][][] surface_normal, E, B;
@@ -29,6 +28,10 @@ namespace Class_library
         public int Nx { get { return this._Nx; } }
         public int Ny { get { return this._Ny; } }
         public int Nz { get { return this._Nz; } }
+
+        public double phi0_upper { get { return this._phi0_upper; } set { this._phi0_upper = value; } }
+        public double phi0_lower { get { return this._phi0_lower; } set { this._phi0_lower = value; } }
+        public double phi0_bulk { get { return this._phi0_bulk; } set { this._phi0_bulk = value; } }
 
         public Q_tensor(int Nx, int Ny, int Nz)
         {
@@ -79,8 +82,56 @@ namespace Class_library
             #endregion
         }
 
-        public void Initialize_fields()
+        public Q_tensor(Q_tensor Q)
         {
+            this._Nx = Q._Nx;
+            this._Ny = Q._Ny;
+            this._Nz = Q._Nz;
+
+            #region Tensor field arrays
+
+            this.Q1 = new double[_Nx][][];
+            this.Q2 = new double[_Nx][][];
+            this.Q3 = new double[_Nx][][];
+            this.Q4 = new double[_Nx][][];
+            this.Q5 = new double[_Nx][][];
+
+            this.Q_type = new int[_Nx][][];
+            this.surface_normal = new double[_Nx][][][];
+
+            for (int i = 0; i < _Nx; i++)
+            {
+                this.Q1[i] = new double[_Ny][];
+                this.Q2[i] = new double[_Ny][];
+                this.Q3[i] = new double[_Ny][];
+                this.Q4[i] = new double[_Ny][];
+                this.Q5[i] = new double[_Ny][];
+
+                this.Q_type[i] = new int[_Ny][];
+                this.surface_normal[i] = new double[_Ny][][];
+
+                for (int j = 0; j < _Ny; j++)
+                {
+                    this.Q1[i][j] = new double[_Nz];
+                    this.Q2[i][j] = new double[_Nz];
+                    this.Q3[i][j] = new double[_Nz];
+                    this.Q4[i][j] = new double[_Nz];
+                    this.Q5[i][j] = new double[_Nz];
+
+                    this.Q_type[i][j] = new int[_Nz];
+                    this.surface_normal[i][j] = new double[_Nz][];
+
+                    for (int k = 0; k < _Nz; k++)
+                    {
+                        this.surface_normal[i][i][k] = new double[3];
+                    }
+                }
+            }
+
+            #endregion
+
+            #region External field arrays
+
             this.E = new double[_Nx][][][];
             this.B = new double[_Nx][][][];
 
@@ -88,7 +139,7 @@ namespace Class_library
             {
                 this.E[i] = new double[_Ny][][];
                 this.B[i] = new double[_Ny][][];
-                
+
                 for (int j = 0; j < _Ny; j++)
                 {
                     this.E[i][j] = new double[_Nz][];
@@ -101,6 +152,59 @@ namespace Class_library
                     }
                 }
             }
+
+            #endregion
+
+            #region Copying field values
+
+            for (int i = 0; i < _Nx; i++)
+            {
+                for (int j = 0; j < _Ny; j++)
+                {
+                    for (int k = 0; k < _Nz; k++)
+                    {
+                        this.Q1[i][j][k] = Q.Q1[i][j][k];
+                        this.Q2[i][j][k] = Q.Q2[i][j][k];
+                        this.Q3[i][j][k] = Q.Q3[i][j][k];
+                        this.Q4[i][j][k] = Q.Q4[i][j][k];
+                        this.Q5[i][j][k] = Q.Q5[i][j][k];
+
+                        this.Q_type[i][j][k] = Q.Q_type[i][j][k];
+
+                        this.surface_normal[i][j][k][0] = Q.surface_normal[i][j][k][0];
+                        this.surface_normal[i][j][k][1] = Q.surface_normal[i][j][k][1];
+                        this.surface_normal[i][j][k][2] = Q.surface_normal[i][j][k][2];
+
+                        this.E[i][j][k][0] = Q.E[i][j][k][0];
+                        this.E[i][j][k][1] = Q.E[i][j][k][1];
+                        this.E[i][j][k][2] = Q.E[i][j][k][2];
+
+                        this.B[i][j][k][0] = Q.B[i][j][k][0];
+                        this.B[i][j][k][1] = Q.B[i][j][k][1];
+                        this.B[i][j][k][2] = Q.B[i][j][k][2];
+                    }
+                }
+            }
+
+            this.defects_down = new double[Q.defects_down.Length][];
+            for (int i = 0; i < Q.defects_down.Length; i++)
+            {
+                this.defects_down[i] = new double[3];
+                this.defects_down[i][0] = Q.defects_down[i][0];
+                this.defects_down[i][1] = Q.defects_down[i][1];
+                this.defects_down[i][2] = Q.defects_down[i][2];
+            }
+
+            this.defects_up = new double[Q.defects_up.Length][];
+            for (int i = 0; i < Q.defects_down.Length; i++)
+            {
+                this.defects_up[i] = new double[3];
+                this.defects_up[i][0] = Q.defects_up[i][0];
+                this.defects_up[i][1] = Q.defects_up[i][1];
+                this.defects_up[i][2] = Q.defects_up[i][2];
+            }
+
+            #endregion
         }
 
         public void Q_state_setup(bool topbottom_boundary, string upper, string lower, string sides)
@@ -170,6 +274,9 @@ namespace Class_library
                             {
                                 case "FREE":
                                     Q_type[i][j][k] = B_FREE;
+                                    break;
+                                case "FROZEN":
+                                    Q_type[i][j][k] = FROZEN;
                                     break;
                                 case "PERIODIC":
                                     Q_type[i][j][k] = B_PERIODIC;
@@ -242,7 +349,14 @@ namespace Class_library
                             for (int k = c_z - size1; k < c_z + size1; k++)
                             {
                                 R1 = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y) + (k - c_z) * (k - c_z);
-                                if (R1 <= size1 * size1) { Q_type[i][j][k] = I_HOMEOTROPIC; }
+                                R1 = Math.Sqrt(R1);
+                                if (R1 <= size1)
+                                {
+                                    Q_type[i][j][k] = I_HOMEOTROPIC;
+                                    surface_normal[i][j][k][0] = (i - c_x) / R1;
+                                    surface_normal[i][j][k][1] = (j - c_y) / R1;
+                                    surface_normal[i][j][k][2] = (k - c_z) / R1;
+                                }
                             }
                         }
                     }
@@ -255,7 +369,14 @@ namespace Class_library
                             for (int k = c_z - size1; k < c_z + size1; k++)
                             {
                                 R1 = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y) + (k - c_z) * (k - c_z);
-                                if (R1 <= size1 * size1) { Q_type[i][j][k] = I_DEGENERATE; }
+                                R1 = Math.Sqrt(R1);
+                                if (R1 <= size1)
+                                {
+                                    Q_type[i][j][k] = I_DEGENERATE;
+                                    surface_normal[i][j][k][0] = (i - c_x) / R1;
+                                    surface_normal[i][j][k][1] = (j - c_y) / R1;
+                                    surface_normal[i][j][k][2] = (k - c_z) / R1;
+                                }
                             }
                         }
                     }
@@ -270,7 +391,14 @@ namespace Class_library
                                 R1 = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y);
                                 R1 = Math.Sqrt(R1);
                                 R2 = (R1 - size1) * (R1 - size1) + (k - c_z) * (k - c_z);
-                                if (R2 <= size2 * size2) { Q_type[i][j][k] = I_HOMEOTROPIC; }
+                                R2 = Math.Sqrt(R2);
+                                if (R2 <= size2)
+                                {
+                                    Q_type[i][j][k] = I_HOMEOTROPIC;
+                                    surface_normal[i][j][k][0] = (i - c_x) / R1;
+                                    surface_normal[i][j][k][1] = (j - c_y) / R1;
+                                    surface_normal[i][j][k][2] = (k - c_z) / R2;
+                                }
                             }
                         }
                     }
@@ -285,7 +413,14 @@ namespace Class_library
                                 R1 = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y);
                                 R1 = Math.Sqrt(R1);
                                 R2 = (R1 - size1) * (R1 - size1) + (k - c_z) * (k - c_z);
-                                if (R2 <= size2 * size2) { Q_type[i][j][k] = I_PLANAR; }
+                                R2 = Math.Sqrt(R2);
+                                if (R2 <= size2)
+                                {
+                                    Q_type[i][j][k] = I_PLANAR;
+                                    surface_normal[i][j][k][0] = (i - c_x) / R1;
+                                    surface_normal[i][j][k][1] = (j - c_y) / R1;
+                                    surface_normal[i][j][k][2] = (k - c_z) / R2;
+                                }
                             }
                         }
                     }
@@ -298,7 +433,14 @@ namespace Class_library
                             for (int k = 0; k < this._Nz; k++)
                             {
                                 R1 = (i - c_x) * (i - c_x) + (j - c_y) * (j - c_y);
-                                if (R1 <= size1 * size1) { Q_type[i][j][k] = FROZEN; }
+                                R1 = Math.Sqrt(R1);
+                                if (R1 <= size1)
+                                {
+                                    Q_type[i][j][k] = FROZEN;
+                                    surface_normal[i][j][k][0] = (i - c_x) / R1;
+                                    surface_normal[i][j][k][1] = (j - c_y) / R1;
+                                    surface_normal[i][j][k][2] = 0.0;
+                                }
                             }
                         }
                     }
@@ -309,8 +451,11 @@ namespace Class_library
             }
         }
 
-        public void Initialize_field_values(string upper, string lower, string bulk, double tt)
+        #region Starting director field
+
+        public void Q_values_initialize(string upper, string lower, string bulk, double tt)
         {
+            bool Q_is_zero;
             double theta = 0.0, phi = 0.0;
 
             for (int i = 0; i < this.Nx; i++)
@@ -326,22 +471,25 @@ namespace Class_library
                         switch (this.Q_type[i][j][k])
                         {
                             case LC:
-                                Q_bulk(bulk, i, j, k, out theta, out phi);
+                                Q_bulk(bulk, i, j, k, out Q_is_zero, out theta, out phi);
                                 break;
                             case FROZEN:
                                 Q_is_zero = true;
                                 break;
                             case I_PLANAR:
+                                if (k == 0) { Q_boundary_topbottom(lower, i, j, defects_down, _phi0_lower, out theta, out phi); }
+                                else if (k == this._Nz - 1) { Q_boundary_topbottom(upper, i, j, defects_up, _phi0_upper, out theta, out phi); }
+                                break;
                             case I_DEGENERATE:
                             case I_HOMEOTROPIC:
-                                if (k == 0) { Q_boundary_topbottom(lower, i, j, k, defects_down, phi0_lower, out theta, out phi); }
-                                if (k == this._Nz - 1) { Q_boundary_topbottom(upper, i, j, k, defects_up, phi0_upper, out theta, out phi); }
-                                else { theta = 0.0; phi = 0.0; }
+                                if (k == 0) { Q_boundary_topbottom(lower, i, j, _phi0_lower, out theta, out phi); }
+                                else if (k == this._Nz - 1) { Q_boundary_topbottom(upper, i, j, _phi0_upper, out theta, out phi); }
+                                else { Q_boundary_angled(i, j, k, out theta, out phi); }
                                 break;
                             case B_FREE:
                             case B_PERIODIC:
                             default:
-                                Q_bulk(bulk, i, j, k, out theta, out phi);
+                                Q_bulk(bulk, i, j, k, out Q_is_zero, out theta, out phi);
                                 break;
                         }
 
@@ -377,9 +525,10 @@ namespace Class_library
             }
         }
 
-        private void Q_bulk(string bulk, int i, int j, int k, out double theta, out double phi)
+        private void Q_bulk(string bulk, int i, int j, int k, out bool Q_is_zero, out double theta, out double phi)
         {
             double directorx, directory, directorz, RR;
+            Q_is_zero = false;
             bulk = bulk.ToUpper();
             switch (bulk)
             {
@@ -390,14 +539,14 @@ namespace Class_library
                     break;
                 case "PLANAR":
                     theta = Math.PI / 2.0;
-                    phi = phi0_bulk;
+                    phi = _phi0_bulk;
                     break;
                 case "HOMEOTROPIC":
                     theta = 0.0;
                     phi = 0.0;
                     break;
                 case "ESCAPED":
-                    phi = Math.Atan2(j - Ny / 2, i - Nx / 2) + phi0_bulk;// + 0.1 * (0.5 - r.NextDouble());
+                    phi = Math.Atan2(j - Ny / 2, i - Nx / 2) + _phi0_bulk;// + 0.1 * (0.5 - r.NextDouble());
                     theta = 2.0 * Math.Atan(Math.Sqrt((i - Nx / 2) * (i - Nx / 2) + (j - Ny / 2) * (j - Ny / 2)) / (Nx / 2));
 
                     if (Math.Abs(theta) > (Math.PI / 2.0))
@@ -407,7 +556,7 @@ namespace Class_library
                     break;
                 case "BOUNDARY DEFECT":
                     theta = Math.PI / 2.0;
-                    phi = phi0_lower;
+                    phi = _phi0_lower;
 
                     for (int d = 0; d < this.defects_down.Length; d++)
                     {
@@ -460,13 +609,12 @@ namespace Class_library
             }
         }
 
-        private void Q_boundary_topbottom(string boundary, int i, int j, int k, double[][] defects, double phi0, out double theta, out double phi)
+        private void Q_boundary_topbottom(string boundary, int i, int j, double[][] defects, double phi0, out double theta, out double phi)
         {
-            double R_ij;
             boundary = boundary.ToUpper();
             switch (boundary)
             {
-                case "PLANAR PATTERNED":  //Defect pattern
+                case "PLANAR PATTERNED":
                     theta = Math.PI / 2.0;
                     phi = phi0;
                     for (int d = 0; d < defects.Length; d++)
@@ -478,6 +626,19 @@ namespace Class_library
                     theta = Math.PI / 2.0;
                     phi = phi0;
                     break;
+                default:
+                    theta = Math.PI / 2.0;
+                    phi = phi0;
+                    break;
+            }
+        }
+
+        private void Q_boundary_topbottom(string boundary, int i, int j, double phi0, out double theta, out double phi)
+        {
+            double R_ij;
+            boundary = boundary.ToUpper();
+            switch (boundary)
+            {
                 case "DEGENERATE":
                     theta = Math.PI / 2.0;
                     phi = Math.PI * r.NextDouble();
@@ -486,7 +647,7 @@ namespace Class_library
                     theta = 0.0;
                     phi = 0.0;
                     break;
-                default:  //Other
+                default: // To induce Moire pattern
                     theta = Math.PI / 2.0;
                     R_ij = (i - this._Nx / 2) * (i - this._Nx / 2) + (j - this._Ny / 2) * (j - this._Ny / 2);
                     R_ij = Math.Sqrt(R_ij);
@@ -499,6 +660,127 @@ namespace Class_library
                         phi = phi0 - (R_ij - 75.0) * Math.PI / 30;
                     }
                     else { phi = phi0 + Math.PI / 2.0; }
+                    break;
+            }
+        }
+
+        private void Q_boundary_angled(int i, int j, int k, out double theta, out double phi)
+        {
+            switch (Q_type[i][j][k])
+            {
+                case I_DEGENERATE:
+                    theta = Math.PI / 2.0;
+                    phi = Math.Atan2(-surface_normal[i][j][k][0], surface_normal[i][j][k][1]);
+                    break;
+                case I_HOMEOTROPIC:
+                    theta = Math.Acos(surface_normal[i][j][k][2]);
+                    phi = Math.Atan2(surface_normal[i][j][k][1], surface_normal[i][j][k][0]);
+                    break;
+                default:
+                    theta = 0.0;
+                    phi = 0.0;
+                    break;
+            }
+        }
+
+        public void Q_boundary_defects_array(string boundary, int N_defects)
+        {
+            boundary = boundary.ToUpper();
+            switch (boundary)
+            {
+                case "LOWER":
+                    defects_down = new double[N_defects][];
+                    for (int i = 0; i < N_defects; i++) { defects_down[i] = new double[3]; }
+                    break;
+                case "UPPER":
+                    defects_up = new double[N_defects][];
+                    for (int i = 0; i < N_defects; i++) { defects_up[i] = new double[3]; }
+                    break;
+            }
+        }
+
+        public void Q_boundary_defects(string boundary, int defect_N, double x, double y, double m)
+        {
+            boundary = boundary.ToUpper();
+            switch (boundary)
+            {
+                case "LOWER":
+                    defects_down[defect_N][0] = x;
+                    defects_down[defect_N][1] = y;
+                    defects_down[defect_N][2] = m;
+                    break;
+                case "UPPER":
+                    defects_up[defect_N][0] = x;
+                    defects_up[defect_N][1] = y;
+                    defects_up[defect_N][2] = m;
+                    break;
+            }
+        }
+
+        #endregion
+
+        public void E_B_initialize()
+        {
+            this.E = new double[_Nx][][][];
+            this.B = new double[_Nx][][][];
+
+            for (int i = 0; i < _Nx; i++)
+            {
+                this.E[i] = new double[_Ny][][];
+                this.B[i] = new double[_Ny][][];
+                
+                for (int j = 0; j < _Ny; j++)
+                {
+                    this.E[i][j] = new double[_Nz][];
+                    this.B[i][j] = new double[_Nz][];
+
+                    for (int k = 0; k < _Nz; k++)
+                    {
+                        this.E[i][j][k] = new double[3];
+                        this.B[i][j][k] = new double[3];
+                    }
+                }
+            }
+        }
+
+        public void E_B_values_setup(string field, bool is_homogeneous, double F_strength, double F_theta, double F_phi)
+        {
+            field = field.ToUpper();
+            switch (field)
+            {
+                case "ELECTRIC":
+                    if (is_homogeneous)
+                    {
+                        for (int i = 0; i < this._Nx; i++)
+                        {
+                            for (int j = 0; j < this._Ny; j++)
+                            {
+                                for (int k = 0; k < this._Nz; k++)
+                                {
+                                    E[i][j][k][0] = F_strength * Math.Sin(F_theta) * Math.Cos(F_phi);
+                                    E[i][j][k][1] = F_strength * Math.Sin(F_theta) * Math.Sin(F_phi);
+                                    E[i][j][k][2] = F_strength * Math.Cos(F_theta);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case "MAGNETIC":
+                    if (is_homogeneous)
+                    {
+                        for (int i = 0; i < this._Nx; i++)
+                        {
+                            for (int j = 0; j < this._Ny; j++)
+                            {
+                                for (int k = 0; k < this._Nz; k++)
+                                {
+                                    B[i][j][k][0] = F_strength * Math.Sin(F_theta) * Math.Cos(F_phi);
+                                    B[i][j][k][1] = F_strength * Math.Sin(F_theta) * Math.Sin(F_phi);
+                                    B[i][j][k][2] = F_strength * Math.Cos(F_theta);
+                                }
+                            }
+                        }
+                    }
                     break;
             }
         }
@@ -597,58 +879,5 @@ namespace Class_library
             this._dyz = Math.Sqrt(this._dy * this._dy + this._dz * this._dz);
             this._dxyz = Math.Sqrt(this._dx * this._dx + this._dy * this._dy + this._dz * this._dz);
         }
-    }
-
-    public static class Environment_static
-    {
-        public static void Initialize_Q(int Nx, int Ny, int Nz, double[][][] Q1, 
-                                        double[][][] Q2, double[][][] Q3, double[][][] Q4, 
-                                        double[][][] Q5, double[][][] Q1_n, double[][][] Q2_n, 
-                                        double[][][] Q3_n, double[][][] Q4_n, double[][][] Q5_n)
-        {
-            Q1 = new double[Nx][][];
-            Q2 = new double[Nx][][];
-            Q3 = new double[Nx][][];
-            Q4 = new double[Nx][][];
-            Q5 = new double[Nx][][];
-
-            Q1_n = new double[Nx][][];
-            Q2_n = new double[Nx][][];
-            Q3_n = new double[Nx][][];
-            Q4_n = new double[Nx][][];
-            Q5_n = new double[Nx][][];
-
-            for (int i = 0; i < Nx; i++)
-            {
-                Q1[i] = new double[Nx][];
-                Q2[i] = new double[Nx][];
-                Q3[i] = new double[Nx][];
-                Q4[i] = new double[Nx][];
-                Q5[i] = new double[Nx][];
-
-                Q1_n[i] = new double[Nx][];
-                Q2_n[i] = new double[Nx][];
-                Q3_n[i] = new double[Nx][];
-                Q4_n[i] = new double[Nx][];
-                Q5_n[i] = new double[Nx][];
-
-                for (int j = 0; j < Ny; j++)
-                {
-                    Q1[i][j] = new double[Nz];
-                    Q2[i][j] = new double[Nz];
-                    Q3[i][j] = new double[Nz];
-                    Q4[i][j] = new double[Nz];
-                    Q5[i][j] = new double[Nz];
-
-                    Q1_n[i][j] = new double[Nz];
-                    Q2_n[i][j] = new double[Nz];
-                    Q3_n[i][j] = new double[Nz];
-                    Q4_n[i][j] = new double[Nz];
-                    Q5_n[i][j] = new double[Nz];
-                }
-            }
-        }
-
-
     }
 }

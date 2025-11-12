@@ -1263,6 +1263,202 @@ namespace LC_order_reconstruction_3D
 
             #region 0 - Standard start
 
+            if (Calculation_selection.SelectedIndex == 10)
+            {
+                Q_tensor Q = new Q_tensor((int)Nx_n.Value, (int)Ny_n.Value, (int)Nz_n.Value);
+                Parameters P = new Parameters((int)itmax_n.Value, (double)eps_n.Value, (double)kor_n.Value,
+                                                (double)Rmi_n.Value, (double)Rma_n.Value, (double)H_ksi_n.Value,
+                                                (double)t_n.Value, (double)w_n.Value, 2.0 * Math.Pow(10, -3));
+                P.Dimensions(Q.Nx, Q.Ny, Q.Nz);
+
+                Q.E_B_initialize();
+                Q.E_B_values_setup("ELECTRIC", E_homogeneous.Checked, (double)Ex_n.Value, (double)Ey_n.Value, (double)Ez_n.Value);
+                Q.E_B_values_setup("MAGNETIC", E_homogeneous.Checked, (double)B_n.Value, (double)Ey_n.Value, (double)Ez_n.Value);
+
+                #region Nastavitev dodatnih parametrov (Need to transfer setup into class library)
+
+                k1 = 11.1;
+                k2 = 6.5;
+                k3 = 17.1;
+
+                L1 = 1.0;
+                L2 = 4.0 * (k1 - k2) / (k3 + 2.0 * k2 - k1);
+                L3 = 2.0 * (k3 - k1) / ((k3 + 2.0 * k2 - k1) * tt);
+
+                L_chiral = 4.0 * Math.PI / a;
+
+                deps = 1.0;
+                if (neg_d_eps_n.Checked) { deps = -1.0; }
+                dmu = 1.0;
+                if (neg_d_mu_n.Checked) { dmu = -1.0; }
+
+                draw_size = pictureBox1.Height;
+                fname = 0;
+
+                #endregion
+
+                string top, bottom, ssides, bbulk;
+
+                #region Top boundary
+
+                upper_boundary = Top_boundary_box.SelectedIndex;
+                switch (upper_boundary)
+                {
+                    case 0:
+                        top = "PLANAR PATTERNED";
+                        Q.phi0_upper = (double)Top_phi_numeric.Value;
+                        Q.phi0_upper = Q.phi0_upper * Math.PI / 180.0;
+                        Q.Q_boundary_defects_array("UPPER", (int)Top_N_numeric.Value);
+                        for (int i = 0; i < (int)Top_N_numeric.Value; i++)
+                        {
+                            //add creation of defect parameters
+                        }
+                        break;
+                    case 1:
+                        top = "PLANAR";
+                        Q.phi0_upper = (double)Top_phi_numeric.Value;
+                        Q.phi0_upper = Q.phi0_upper * Math.PI / 180.0;
+                        break;
+                    case 2:
+                        top = "DEGENERATE";
+                        break;
+                    case 3:
+                        top = "HOMEOTROPIC";
+                        break;
+                    default:
+                        top = "PLANAR";
+                        Q.phi0_upper = (double)Top_phi_numeric.Value;
+                        Q.phi0_upper = Q.phi0_upper * Math.PI / 180.0;
+                        break;
+                }
+
+                #endregion
+
+                #region Bottom boundary
+
+                lower_boundary = Bottom_boundary_box.SelectedIndex;
+                switch (lower_boundary)
+                {
+                    case 0:
+                        bottom = "PLANAR PATTERNED";
+                        Q.phi0_lower = (double)Bottom_phi_numeric.Value;
+                        Q.phi0_lower = Q.phi0_lower * Math.PI / 180.0;
+                        Q.Q_boundary_defects_array("LOWER", (int)Bottom_N_numeric.Value);
+                        for (int i = 0; i < (int)Bottom_N_numeric.Value; i++)
+                        {
+                            //add creation of defect parameters
+                        }
+                        break;
+                    case 1:
+                        bottom = "PLANAR";
+                        Q.phi0_lower = (double)Bottom_phi_numeric.Value;
+                        Q.phi0_lower = Q.phi0_lower * Math.PI / 180.0;
+                        break;
+                    case 2:
+                        bottom = "DEGENERATE";
+                        break;
+                    case 3:
+                        bottom = "HOMEOTROPIC";
+                        break;
+                    default:
+                        bottom = "PLANAR";
+                        Q.phi0_lower = (double)Bottom_phi_numeric.Value;
+                        Q.phi0_lower = Q.phi0_lower * Math.PI / 180.0;
+                        break;
+                }
+
+                #endregion
+
+                #region Sides
+
+                sides = Sides_box.SelectedIndex;
+                switch (sides)
+                {
+                    case 0:
+                        ssides = "FREE";
+                        break;
+                    case 1:
+                        ssides = "FROZEN";
+                        break;
+                    case 2:
+                        ssides = "PERIODIC";
+                        break;
+                    default:
+                        ssides = "FREE";
+                        break;
+                }
+
+                #endregion
+
+                Q.Q_state_setup(true, top, bottom, ssides);
+                Q.Q_state_cleanup();
+
+                #region Bulk
+
+                bulk = Bulk_box.SelectedIndex;
+                switch (bulk)
+                {
+                    case 0:
+                        bbulk = "ISOTROPIC";
+                        break;
+                    case 1:
+                        bbulk = "PLANAR";
+                        Q.phi0_bulk = (double)Bulk_phi_numeric.Value;
+                        Q.phi0_bulk = Q.phi0_bulk * Math.PI / 180.0;
+                        break;
+                    case 2:
+                        bbulk = "HOMEOTROPIC";
+                        break;
+                    case 3:
+                        bbulk = "ESCAPED";
+                        Q.phi0_bulk = (double)Bulk_phi_numeric.Value;
+                        Q.phi0_bulk = Q.phi0_bulk * Math.PI / 180.0;
+                        break;
+                    case 4:
+                        bbulk = "BOUNDARY DEFECT";
+                        break;
+                    case 5:
+                        bbulk = "TWIST";
+                        break;
+                    case 6:
+                        bbulk = "DOUBLE TWIST";
+                        break;
+                    default:
+                        bbulk = "PLANAR";
+                        Q.phi0_bulk = (double)Bulk_phi_numeric.Value;
+                        Q.phi0_bulk = Q.phi0_bulk * Math.PI / 180.0;
+                        break;
+                }
+
+                #endregion
+
+                if (Inserts_n.Checked)
+                {
+                    Q.Insert_setup("POINT", 0, 0, (int)x_insert_n.Value, (int)y_insert_n.Value, (int)z_insert_n.Value);
+                }
+
+                Q.Q_values_initialize(top, bottom, bbulk, P.tt);
+                Q_tensor Q_n = new Q_tensor(Q);
+
+                IO_functions.Parameters_output(Q, P);
+
+                progressBar1.Visible = true;
+                progressBar1.Maximum = itmax;
+                progressBar1.Value = 0;
+
+                Thread th = new Thread(Calculation);
+                th.IsBackground = true;
+                th.Start();
+
+                th.Join();
+
+                progressBar1.Visible = false;
+
+                trackBar_depth.Visible = true;
+                trackBar_depth.Maximum = Nx - 1;
+                Pogled.Visible = true;
+            }
+
             if (Calculation_selection.SelectedIndex == 0)
             {
                 #region Nastavitev vrednosti iz menija
