@@ -1265,6 +1265,8 @@ namespace LC_order_reconstruction_3D
 
             if (Calculation_selection.SelectedIndex == 10)
             {
+                #region Initial setup
+
                 Q_tensor Q = new Q_tensor((int)Nx_n.Value, (int)Ny_n.Value, (int)Nz_n.Value);
                 Parameters P = new Parameters((int)itmax_n.Value, (double)eps_n.Value, (double)kor_n.Value,
                                                 (double)Rmi_n.Value, (double)Rma_n.Value, (double)H_ksi_n.Value,
@@ -1274,6 +1276,8 @@ namespace LC_order_reconstruction_3D
                 Q.E_B_initialize();
                 Q.E_B_values_setup("ELECTRIC", E_homogeneous.Checked, (double)Ex_n.Value, (double)Ey_n.Value, (double)Ez_n.Value);
                 Q.E_B_values_setup("MAGNETIC", E_homogeneous.Checked, (double)B_n.Value, (double)Ey_n.Value, (double)Ez_n.Value);
+
+                #endregion
 
                 #region Nastavitev dodatnih parametrov (Need to transfer setup into class library)
 
@@ -4774,7 +4778,46 @@ namespace LC_order_reconstruction_3D
             #endregion
         }
 
+
+        private void Run(Q_tensor Q, Q_tensor Q_n, Parameters P)
+        {
+            if (time_dependent)
+            {
+                Time_evolution minimize = new Time_evolution(Q, Q_n, P);
+            }
+            else
+            {
+                Minimization minimize = new Minimization(Q, Q_n, P);
+            }
+
             
+
+            it = 0;
+            Task<bool>[] tasks = new Task<bool>[5];
+
+            while (it < P.itmax)
+            {
+                
+                tasks[0] = Task.Factory.StartNew(() => Iteracija_Q1());
+                tasks[1] = Task.Factory.StartNew(() => Iteracija_Q2());
+                tasks[2] = Task.Factory.StartNew(() => Iteracija_Q3());
+                tasks[3] = Task.Factory.StartNew(() => Iteracija_Q4());
+                tasks[4] = Task.Factory.StartNew(() => Iteracija_Q5());
+
+                Task.WaitAll(tasks);
+
+            }
+
+            Color color = Color.FromArgb(0, 0, 0);
+            Graphics formGraphics = pictureBox1.CreateGraphics();
+            Narisi(color, formGraphics);
+
+            Angle_calculation();
+
+            MessageBox.Show("Completed!");
+        }
+
+
         #region Q simulations
 
         private void Calculation()
