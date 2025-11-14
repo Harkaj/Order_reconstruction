@@ -170,7 +170,7 @@ namespace Class_library
 
         #region Condensation terms
 
-        public double Condensation_term_Q1(int i, int j, int k, Q_tensor Q)
+        private double Condensation_term_Q1(int i, int j, int k, Q_tensor Q)
         {
             Q.Q_values(i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
             double tr_Q2 = Analysis.Half_trQ_square(q1, q2, q3, q4, q5);
@@ -179,28 +179,28 @@ namespace Class_library
 
             return result;
         }
-        public double Condensation_term_Q2(int i, int j, int k, Q_tensor Q)
+        private double Condensation_term_Q2(int i, int j, int k, Q_tensor Q)
         {
             Q.Q_values(i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
             double tr_Q2 = Analysis.Half_trQ_square(q1, q2, q3, q4, q5);
 
             return -_P.t * q2 / 6.0 + (4.0 * q1 * q2 + q4 * q4 - q5 * q5) / 2.0 - (q2 * tr_Q2) / 2.0;
         }
-        public double Condensation_term_Q3(int i, int j, int k, Q_tensor Q)
+        private double Condensation_term_Q3(int i, int j, int k, Q_tensor Q)
         {
             Q.Q_values(i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
             double tr_Q2 = Analysis.Half_trQ_square(q1, q2, q3, q4, q5);
 
             return -_P.t * q3 / 6.0 + 2.0 * q1 * q3 + q4 * q5 - (q3 * tr_Q2) / 2.0;
         }
-        public double Condensation_term_Q4(int i, int j, int k, Q_tensor Q)
+        private double Condensation_term_Q4(int i, int j, int k, Q_tensor Q)
         {
             Q.Q_values(i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
             double tr_Q2 = Analysis.Half_trQ_square(q1, q2, q3, q4, q5);
 
             return -_P.t * q4 / 6.0 - q1 * q4 + q2 * q4 + q3 * q5 - (q4 * tr_Q2) / 2.0;
         }
-        public double Condensation_term_Q5(int i, int j, int k, Q_tensor Q)
+        private double Condensation_term_Q5(int i, int j, int k, Q_tensor Q)
         {
             Q.Q_values(i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
             double tr_Q2 = Analysis.Half_trQ_square(q1, q2, q3, q4, q5);
@@ -212,7 +212,7 @@ namespace Class_library
 
         #region Elastic terms (Chiral terms to be added)
 
-        public virtual double Elastic_term_Q1(int i, int j, int k, Q_tensor Q)
+        protected virtual double Elastic_term_Q1(int i, int j, int k, Q_tensor Q)
         {
             double d_x, d_y, d_z;// q4dy, q5dx;
 
@@ -229,7 +229,7 @@ namespace Class_library
 
             return d_x + d_y + d_z;// + _P.L_chiral * (-q4dy + q5dx) / 4.0;
         }
-        public virtual double Elastic_term_Q2(int i, int j, int k, Q_tensor Q)
+        protected virtual double Elastic_term_Q2(int i, int j, int k, Q_tensor Q)
         {
             double d_x, d_y, d_z;
 
@@ -243,7 +243,7 @@ namespace Class_library
 
             return d_x + d_y + d_z;
         }
-        public virtual double Elastic_term_Q3(int i, int j, int k, Q_tensor Q)
+        protected virtual double Elastic_term_Q3(int i, int j, int k, Q_tensor Q)
         {
             double d_x, d_y, d_z;
 
@@ -257,7 +257,7 @@ namespace Class_library
 
             return d_x + d_y + d_z;
         }
-        public virtual double Elastic_term_Q4(int i, int j, int k, Q_tensor Q)
+        protected virtual double Elastic_term_Q4(int i, int j, int k, Q_tensor Q)
         {
             double d_x, d_y, d_z;
 
@@ -271,7 +271,7 @@ namespace Class_library
 
             return d_x + d_y + d_z;
         }
-        public virtual double Elastic_term_Q5(int i, int j, int k, Q_tensor Q)
+        protected virtual double Elastic_term_Q5(int i, int j, int k, Q_tensor Q)
         {
             double d_x, d_y, d_z;
 
@@ -290,31 +290,27 @@ namespace Class_library
 
         #region Field terms
 
-        public double Field_term_Q1(int i, int j, int k, Q_tensor Q)
+        private double Field_term_Q1(int i, int j, int k, Q_tensor Q)
         {
             Q.E_B_values(i, j, k, out double[] E, out double[] B);
             return _P.delta_eps * (E[0] * E[0] + E[1] * E[1] - 2.0 * E[2] * E[2]) / 12.0 + _P.delta_mu * (B[0] * B[0] + B[1] * B[1] - 2.0 * B[2] * B[2]) / 12.0;
         }
-
-        public double Field_term_Q2(int i, int j, int k, Q_tensor Q)
+        private double Field_term_Q2(int i, int j, int k, Q_tensor Q)
         {
             Q.E_B_values(i, j, k, out double[] E, out double[] B);
             return _P.delta_eps * (E[0] * E[0] - E[1] * E[1]) / 4.0 + _P.delta_mu * (B[0] * B[0] - B[1] * B[1]) / 4.0;
         }
-
-        public double Field_term_Q3(int i, int j, int k, Q_tensor Q)
+        private double Field_term_Q3(int i, int j, int k, Q_tensor Q)
         {
             Q.E_B_values(i, j, k, out double[] E, out double[] B);
             return _P.delta_eps * E[0] * E[1] / 2.0 + _P.delta_mu * B[0] * B[1] / 2.0;
         }
-
-        public double Field_term_Q4(int i, int j, int k, Q_tensor Q)
+        private double Field_term_Q4(int i, int j, int k, Q_tensor Q)
         {
             Q.E_B_values(i, j, k, out double[] E, out double[] B);
             return _P.delta_eps * E[0] * E[2] / 2.0 + _P.delta_mu * B[0] * B[2] / 2.0;
         }
-
-        public double Field_term_Q5(int i, int j, int k, Q_tensor Q)
+        private double Field_term_Q5(int i, int j, int k, Q_tensor Q)
         {
             Q.E_B_values(i, j, k, out double[] E, out double[] B);
             return _P.delta_eps * E[1] * E[2] / 2.0 + _P.delta_mu * B[1] * B[2] / 2.0;
@@ -324,7 +320,7 @@ namespace Class_library
 
         #region Calculating subsequent value
 
-        public virtual double Subsequent_value_Q1(int i, int j, int k, Q_tensor Q, double EL_en)
+        protected virtual double Subsequent_value_Q1(int i, int j, int k, Q_tensor Q, double EL_en)
         {
             double dEL_en;
 
@@ -336,8 +332,7 @@ namespace Class_library
 
             return Q.Q2[i][j][k] - _P.kor * EL_en / dEL_en;
         }
-
-        public virtual double Subsequent_value_Q2(int i, int j, int k, Q_tensor Q, double EL_en)
+        protected virtual double Subsequent_value_Q2(int i, int j, int k, Q_tensor Q, double EL_en)
         {
             double dEL_en;
 
@@ -349,8 +344,7 @@ namespace Class_library
 
             return Q.Q2[i][j][k] - _P.kor * EL_en / dEL_en;
         }
-
-        public virtual double Subsequent_value_Q3(int i, int j, int k, Q_tensor Q, double EL_en)
+        protected virtual double Subsequent_value_Q3(int i, int j, int k, Q_tensor Q, double EL_en)
         {
             double dEL_en;
 
@@ -362,8 +356,7 @@ namespace Class_library
 
             return Q.Q3[i][j][k] - _P.kor * EL_en / dEL_en;
         }
-
-        public virtual double Subsequent_value_Q4(int i, int j, int k, Q_tensor Q, double EL_en)
+        protected virtual double Subsequent_value_Q4(int i, int j, int k, Q_tensor Q, double EL_en)
         {
             double dEL_en;
 
@@ -375,8 +368,7 @@ namespace Class_library
 
             return Q.Q4[i][j][k] - _P.kor * EL_en / dEL_en;
         }
-
-        public virtual double Subsequent_value_Q5(int i, int j, int k, Q_tensor Q, double EL_en)
+        protected virtual double Subsequent_value_Q5(int i, int j, int k, Q_tensor Q, double EL_en)
         {
             double dEL_en;
 
@@ -397,23 +389,23 @@ namespace Class_library
     {
         public Time_evolution(Q_tensor Q, Q_tensor Q_n, Parameters P) : base(Q, Q_n, P) { }
 
-        public override double Subsequent_value_Q1(int i, int j, int k, Q_tensor Q, double EL_en)
+        protected override double Subsequent_value_Q1(int i, int j, int k, Q_tensor Q, double EL_en)
         {
             return Q.Q1[i][j][k] + _P.dt * 2.0 * EL_en / _P.gamma;
         }
-        public override double Subsequent_value_Q2(int i, int j, int k, Q_tensor Q, double EL_en)
+        protected override double Subsequent_value_Q2(int i, int j, int k, Q_tensor Q, double EL_en)
         {
             return Q.Q2[i][j][k] + _P.dt * 2.0 * EL_en / _P.gamma;
         }
-        public override double Subsequent_value_Q3(int i, int j, int k, Q_tensor Q, double EL_en)
+        protected override double Subsequent_value_Q3(int i, int j, int k, Q_tensor Q, double EL_en)
         {
             return Q.Q3[i][j][k] + _P.dt * 2.0 * EL_en / _P.gamma;
         }
-        public override double Subsequent_value_Q4(int i, int j, int k, Q_tensor Q, double EL_en)
+        protected override double Subsequent_value_Q4(int i, int j, int k, Q_tensor Q, double EL_en)
         {
             return Q.Q4[i][j][k] + _P.dt * 2.0 * EL_en / _P.gamma;
         }
-        public override double Subsequent_value_Q5(int i, int j, int k, Q_tensor Q, double EL_en)
+        protected override double Subsequent_value_Q5(int i, int j, int k, Q_tensor Q, double EL_en)
         {
             return Q.Q5[i][j][k] + _P.dt * 2.0 * EL_en / _P.gamma;
         }
@@ -424,7 +416,7 @@ namespace Class_library
     {
         public Inequal_L(Q_tensor Q, Q_tensor Q_n, Parameters P) : base(Q, Q_n, P) { }
 
-        public override double Elastic_term_Q1(int i, int j, int k, Q_tensor Q)
+        protected override double Elastic_term_Q1(int i, int j, int k, Q_tensor Q)
         {
             Q.Q_values(i, j, k, out double q1, out double q2, out double q3, out double q4, out double q5);
             double l1, l2, l3_1, l3_2;
@@ -503,19 +495,19 @@ namespace Class_library
 
             return _P.L1 * l1 + _P.L2 * l2 / 6.0 + _P.L3 * (l3_1 + l3_2);
         }
-        public override double Elastic_term_Q2(int i, int j, int k, Q_tensor Q)
+        protected override double Elastic_term_Q2(int i, int j, int k, Q_tensor Q)
         {
             return base.Elastic_term_Q2(i, j, k, Q);
         }
-        public override double Elastic_term_Q3(int i, int j, int k, Q_tensor Q)
+        protected override double Elastic_term_Q3(int i, int j, int k, Q_tensor Q)
         {
             return base.Elastic_term_Q3(i, j, k, Q);
         }
-        public override double Elastic_term_Q4(int i, int j, int k, Q_tensor Q)
+        protected override double Elastic_term_Q4(int i, int j, int k, Q_tensor Q)
         {
             return base.Elastic_term_Q4(i, j, k, Q);
         }
-        public override double Elastic_term_Q5(int i, int j, int k, Q_tensor Q)
+        protected override double Elastic_term_Q5(int i, int j, int k, Q_tensor Q)
         {
             return base.Elastic_term_Q5(i, j, k, Q);
         }
