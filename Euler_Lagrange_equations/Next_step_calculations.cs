@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,13 +9,14 @@ namespace Class_library
 {
     public class Minimization
     {
-        protected Q_tensor _Q, _Q_n;
+        protected Q_tensor _Q, _Q_n, _Q_i;
         protected Parameters _P;
 
-        public Minimization(Q_tensor Q, Q_tensor Q_n, Parameters P)
+        public Minimization(Q_tensor Q, Q_tensor Q_n, Q_tensor Q_i, Parameters P)
         {
             this._Q = Q;
             this._Q_n = Q_n;
+            this._Q_i = Q_i;
             this._P = P;
         }
 
@@ -318,6 +320,91 @@ namespace Class_library
 
         #endregion
 
+        #region Surface terms
+
+        public void Interface_interactions(Q_tensor Q)
+        {
+            for (int i = 0; i < Q.Nx; i++)
+            {
+                for (int j = 0; j < Q.Ny; j++)
+                {
+                    for (int k = 0; k < Q.Nz; k++)
+                    {
+                        if (Q.Q_type[i][j][k] == Q_tensor.LC) { continue; }
+                        if (Q.Q_type[i][j][k] == Q_tensor.FROZEN) { continue; }
+                        if (Q.Q_type[i][j][k] == Q_tensor.B_PERIODIC) { continue; }
+
+                        switch (Q.Q_type[i][j][k])
+                        {
+                            case Q_tensor.B_FREE:
+                                if (i == 0) { Boundary_term_free(i, j, k, 1, j, k, Q); }
+                                else if (j == 0) { Boundary_term_free(i, j, k, i, 1, k, Q); }
+                                else if (k == 0) { Boundary_term_free(i, j, k, i, j, 1, Q); }
+                                else if (i == 0) { Boundary_term_free(i, j, k, Q.Nx - 2, j, k, Q); }
+                                else if (i == 0) { Boundary_term_free(i, j, k, i, Q.Ny - 2, k, Q); }
+                                else if (i == 0) { Boundary_term_free(i, j, k, i, j, Q.Nz - 2, Q); }
+                                break;
+                            case Q_tensor.I_DEGENERATE:
+                                if (_P.w >= Parameters.w_c) { Surface_term_planar_degenerate_old(i, j, k, Q); }
+                                else { Surface_term_planar_degenerate_old(i, j, k, Q); }
+                                break;
+                            case Q_tensor.I_PLANAR:
+                            case Q_tensor.I_HOMEOTROPIC:
+                                if (_P.w >= Parameters.w_c) { Surface_term_strong(i, j, k, Q); }
+                                else { Surface_term_weak(i, j, k, Q); }
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void Boundary_term_free(int i, int j, int k, int i_n, int j_n, int k_n, Q_tensor Q)
+        {
+            Q.Q1[i][j][k] = Q.Q1[i_n][j_n][k_n];
+            Q.Q2[i][j][k] = Q.Q2[i_n][j_n][k_n];
+            Q.Q3[i][j][k] = Q.Q3[i_n][j_n][k_n];
+            Q.Q4[i][j][k] = Q.Q4[i_n][j_n][k_n];
+            Q.Q5[i][j][k] = Q.Q5[i_n][j_n][k_n];
+        }
+
+        private void Surface_term_strong(int i, int j, int k, Q_tensor Q)
+        {
+            Q.Q1[i][j][k] = _Q_i.Q1[i][j][k];
+            Q.Q2[i][j][k] = _Q_i.Q2[i][j][k];
+            Q.Q3[i][j][k] = _Q_i.Q3[i][j][k];
+            Q.Q4[i][j][k] = _Q_i.Q4[i][j][k];
+            Q.Q5[i][j][k] = _Q_i.Q5[i][j][k];
+        }
+        private void Surface_term_weak(int i, int j, int k, Q_tensor Q)
+        {
+            Q.Q1[i][j][k] = (Q.Q1[i][j][k] + _P.w * _P.dz * _Q_i.Q1[i][j][k]) / (1 + _P.w * _P.dz);
+            Q.Q2[i][j][k] = (Q.Q2[i][j][k] + _P.w * _P.dz * _Q_i.Q2[i][j][k]) / (1 + _P.w * _P.dz);
+            Q.Q3[i][j][k] = (Q.Q3[i][j][k] + _P.w * _P.dz * _Q_i.Q3[i][j][k]) / (1 + _P.w * _P.dz);
+            Q.Q4[i][j][k] = (Q.Q4[i][j][k] + _P.w * _P.dz * _Q_i.Q4[i][j][k]) / (1 + _P.w * _P.dz);
+            Q.Q5[i][j][k] = (Q.Q5[i][j][k] + _P.w * _P.dz * _Q_i.Q5[i][j][k]) / (1 + _P.w * _P.dz);
+
+        }
+
+        private void Surface_term_planar_degenerate_old(int i, int j, int k, Q_tensor Q)
+        {
+            double dvafi = Math.Atan2(Q.Q3[i][j][k], Q.Q2[i][j][k]);
+
+            Q.Q2[i][j][k] = _P.tt * Math.Cos(dvafi) / 2.0;
+            Q.Q2[i][j][k] = _P.tt * Math.Sin(dvafi) / 2.0;
+
+        }
+        private void Surface_term_planar_degenerate(int i, int j, int k, Q_tensor Q)
+        {
+            double dvafi = Math.Atan2(Q.Q3[i][j][k], Q.Q2[i][j][k]);
+
+            Q.Q2[i][j][k] = _P.tt * Math.Cos(dvafi) / 2.0;
+            Q.Q2[i][j][k] = _P.tt * Math.Sin(dvafi) / 2.0;
+
+        }
+
+        #endregion
+
         #region Calculating subsequent value
 
         protected virtual double Subsequent_value_Q1(int i, int j, int k, Q_tensor Q, double EL_en)
@@ -387,7 +474,7 @@ namespace Class_library
 
     public class Time_evolution : Minimization
     {
-        public Time_evolution(Q_tensor Q, Q_tensor Q_n, Parameters P) : base(Q, Q_n, P) { }
+        public Time_evolution(Q_tensor Q, Q_tensor Q_n, Q_tensor Q_i, Parameters P) : base(Q, Q_n, Q_i, P) { }
 
         protected override double Subsequent_value_Q1(int i, int j, int k, Q_tensor Q, double EL_en)
         {
@@ -414,7 +501,7 @@ namespace Class_library
 
     public class Inequal_L : Minimization
     {
-        public Inequal_L(Q_tensor Q, Q_tensor Q_n, Parameters P) : base(Q, Q_n, P) { }
+        public Inequal_L(Q_tensor Q, Q_tensor Q_n, Q_tensor Q_i, Parameters P) : base(Q, Q_n, Q_i, P) { }
 
         protected override double Elastic_term_Q1(int i, int j, int k, Q_tensor Q)
         {

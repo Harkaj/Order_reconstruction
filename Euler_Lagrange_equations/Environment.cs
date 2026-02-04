@@ -818,6 +818,7 @@ namespace Class_library
         private readonly double _L1, _L2, _L3, _L_chiral;
         private double _dx, _dy, _dz, _dxy, _dxz, _dyz, _dxyz;
         private int _nap;
+        public const double w_c = 100.0;
 
         public int itmax { get { return this._itmax; } }
         public double eps { get { return this._eps; } }

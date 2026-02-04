@@ -4779,15 +4779,15 @@ namespace LC_order_reconstruction_3D
         }
 
 
-        private void Run(Q_tensor Q, Q_tensor Q_n, Parameters P)
+        private void Run(Q_tensor Q, Q_tensor Q_n, Q_tensor Q_i, Parameters P)
         {
             if (time_dependent)
             {
-                Time_evolution minimize = new Time_evolution(Q, Q_n, P);
+                Time_evolution minimize = new Time_evolution(Q, Q_n, Q_i, P);
             }
             else
             {
-                Minimization minimize = new Minimization(Q, Q_n, P);
+                Minimization minimize = new Minimization(Q, Q_n, Q_i, P);
             }
 
             
