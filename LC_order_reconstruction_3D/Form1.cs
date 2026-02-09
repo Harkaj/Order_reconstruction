@@ -657,7 +657,7 @@ namespace LC_order_reconstruction_3D
             #endregion
 
             #region Gauss random setup
-
+            /*
             string[] datoteka = File.ReadAllLines("erf_tab.dat");
             string[] data;
             string[] separators = { "\t", " " };
@@ -675,7 +675,7 @@ namespace LC_order_reconstruction_3D
                 errf[i][0] = double.Parse(data[0]);
                 errf[i][1] = double.Parse(data[1]);
             }
-
+            */
             #endregion
 
             #region Začetni Q v snovi
@@ -1022,11 +1022,11 @@ namespace LC_order_reconstruction_3D
 
                                 if (Math.Sqrt((j - Ny / 2) * (j - Ny / 2) + (i - Nx / 2) * (i - Nx / 2)) < 48)
                                 {
-                                    Q1[i][j][k] = Random_Gauss(errf, 0.001);
-                                    Q2[i][j][k] = Random_Gauss(errf, 0.001);
-                                    Q3[i][j][k] = Random_Gauss(errf, 0.001);
-                                    Q4[i][j][k] = Random_Gauss(errf, 0.001);
-                                    Q5[i][j][k] = Random_Gauss(errf, 0.001);
+                                    Q1[i][j][k] = 0.0;// Random_Gauss(errf, 0.001);
+                                    Q2[i][j][k] = 0.0;// Random_Gauss(errf, 0.001);
+                                    Q3[i][j][k] = 0.0;// Random_Gauss(errf, 0.001);
+                                    Q4[i][j][k] = 0.0;// Random_Gauss(errf, 0.0001);
+                                    Q5[i][j][k] = 0.0;// Random_Gauss(errf, 0.0001);
 
                                     Q1_n[i][j][k] = 0.0;
                                     Q2_n[i][j][k] = 0.0;
@@ -7932,7 +7932,7 @@ namespace LC_order_reconstruction_3D
 
                 progressBar1.Increment(2);
 
-                if (it % 2 == 0)
+                if (it % 100 == 0)
                 {
                     Direktorsko_polje(Q1, Q2, Q3, Q4, Q5);
 
@@ -16420,7 +16420,7 @@ namespace LC_order_reconstruction_3D
             #endregion
 
             #region Izpis celotnega tenzorja
-
+            /*
             dir = Path.Combine(dir0, "results");
 
             if (!Directory.Exists(dir))
@@ -16456,11 +16456,11 @@ namespace LC_order_reconstruction_3D
                     }
                 }
             }
-
+            */
             #endregion
 
             #region Izpis direktorskega polja
-
+            /*
             dir = Path.Combine(dir0, "Direktorsko polje");
 
             if (!Directory.Exists(dir))
@@ -16496,7 +16496,7 @@ namespace LC_order_reconstruction_3D
                     }
                 }
             }
-
+            */
             #endregion
 
         }

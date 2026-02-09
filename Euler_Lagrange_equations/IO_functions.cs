@@ -548,19 +548,22 @@ namespace Class_library
         /// <param name="dir">Output folder</param>
         /// <param name="Nx">System size in x</param>
         /// <param name="Ny">System size in y</param>
-        public static void GNUplot_beta_2D(string file, string[] dir, int Nx, int Ny)
+        public static void GNUplot_beta_2D(string file, string dir, int Nx, int Ny)
         {
             using (StreamWriter writer = new StreamWriter(Path.Combine(dir, "Beta_2D.gp"), false))
             {
                 writer.WriteLine("reset");
-                writer.WriteLine("set terminal png size 800,600 lw 5");
-                writer.WriteLine("set output 'Beta_2D.png'");
+                writer.WriteLine("set terminal png size 800,800 lw 5");
                 writer.WriteLine("unset title");
                 writer.WriteLine("unset border");
                 writer.WriteLine("unset xtics");
                 writer.WriteLine("unset ytics");
                 writer.WriteLine("unset key");
-                writer.WriteLine("plot [0:{0}] [0:1] '{2}' using 1:2 with points", Nx, Ny, file);
+                writer.WriteLine("FILES = system(\"dir /b *.txt\")");
+                writer.WriteLine("do for [data in FILES]{");
+                writer.WriteLine("    filename=sprintf(\"GNUplot/%s.png\",substr(data,0,strlen(data)-4))");
+                writer.WriteLine("    set output filename");
+                writer.WriteLine("    plot [0:{0}] [0:{1}] data using 1:2 with points}", Nx, Ny);
             }
             
         }
